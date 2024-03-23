@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-router_v1 = APIRouter(prefix='/api/v1')
+router_v1 = APIRouter(prefix='/auth-service/api/v1')
 router_v1.include_router(account.router)
 
 app.include_router(router_v1)
@@ -33,7 +33,7 @@ app.include_router(router_v1)
 exception.include_app(app)
 
 
-@app.get('/gateway/{term}')
+@app.get('/auth-service/{term}')
 async def info(term: str):
     if term != 'yolo':
         raise HTTPException(
