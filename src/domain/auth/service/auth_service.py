@@ -71,7 +71,7 @@ class AuthService:
     '''
     async def signup(
         self,
-        data: auth.SignupDTO,
+        data: auth.NewAccountDTO,
     ) -> (auth.AccountVO):
         # account schema
         account_entity: AccountEntity = None
@@ -91,8 +91,8 @@ class AuthService:
 
     '''
     登入流程
-        1. 驗證登入資訊
-        2. 取得帳戶資料
+        1. 取得帳戶資料
+        2. 驗證登入資訊
     '''
     async def login(
         self,
@@ -155,6 +155,7 @@ class AuthService:
                 data:%s, account_entity:%s, err:%s',
                 data, account_entity, e.__str__())
             raise_http_exception(e)
+
 
     async def send_reset_password_confirm_email(
         self,

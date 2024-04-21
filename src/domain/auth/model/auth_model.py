@@ -10,7 +10,7 @@ import logging as log
 log.basicConfig(filemode='w', level=log.INFO)
 
 
-class SignupDTO(BaseModel):
+class NewAccountDTO(BaseModel):
     # region: pass by gateway
     region: str
     email: EmailStr
@@ -42,9 +42,10 @@ class SignupDTO(BaseModel):
             # TODO: oauth: oauth_id
             return None
 
+
 class AccountVO(BaseModel):
     aid: int
     email: EmailStr
-    user_id: int
     account_type: AccountType
     region: str
+    user_id: int

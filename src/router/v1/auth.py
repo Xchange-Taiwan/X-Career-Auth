@@ -46,7 +46,7 @@ async def send_conform_code_by_email(
              responses=post_response('signup', auth.AccountVO),
              status_code=201)
 async def signup(
-    payload: auth.SignupDTO = Body(...),
+    payload: auth.NewAccountDTO = Body(...),
 ):
     res = await _auth_service.signup(payload)
     return res_success(data=res)
