@@ -43,6 +43,12 @@ class NewAccountDTO(BaseModel):
             return None
 
 
+class UpdatePasswordDTO(BaseModel):
+    pass_hash: str
+    pass_salt: str
+    email: EmailStr
+
+
 class AccountVO(BaseModel):
     aid: int
     email: EmailStr

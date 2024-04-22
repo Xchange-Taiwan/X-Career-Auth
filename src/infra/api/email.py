@@ -86,7 +86,7 @@ class Email:
                     'ToAddresses': [email],
                 },
                 Message={
-                    'Subject': {'Data': f'ForeignTeacher - Verification Code: {confirm_code}'},
+                    'Subject': {'Data': f'{SITE_TITLE} - Verification Code: {confirm_code}'},
                     'Body': {
                         'Text': {'Data': f'Your Code is: {confirm_code}'},
                         'Html': {'Data': html_template},
@@ -139,7 +139,7 @@ class Email:
                     'ToAddresses': [email],
                 },
                 Message={
-                    'Subject': {'Data': f'ForeignTeacher - Reset Password'},
+                    'Subject': {'Data': f'{SITE_TITLE} - Reset Password'},
                     'Body': {
                         'Text': {'Data': f'Reset Your Password'},
                         'Html': {'Data': html_template},

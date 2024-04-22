@@ -8,7 +8,7 @@ class ConfirmCodeDTO(BaseModel):
 
 
 class EmailVO(BaseModel):
-    sender_id: int  # role_id
-    recipient_id: int  # role_id
+    sender_id: int  # user_id
+    recipient_id: int  # user_id
     subject: str
     body: str

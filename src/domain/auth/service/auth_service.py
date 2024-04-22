@@ -11,7 +11,7 @@ from ..model import (
     auth_model as auth,
 )
 from ..entity.auth_entity import AccountEntity
-from ..data_access_layer.auth_dao import UpdatePasswordDAO
+from ..model.auth_model import UpdatePasswordDTO
 from ...message.model.email_model import *
 from ..model import (
     gateway_auth_model as gw,
@@ -65,9 +65,8 @@ class AuthService:
 
     '''
     註冊流程
-        1. 檢查 email 有沒註冊過
-        2. 產生帳戶資料
-        3. 將帳戶資料寫入 DB
+        1. 產生帳戶資料
+        2. 將帳戶資料寫入 DB
     '''
     async def signup(
         self,
@@ -101,10 +100,10 @@ class AuthService:
         # account schema
         account_entity: AccountEntity = None
         try:
-            # 1. 透過 email 取得 account_entity
+            # 1. 取得帳戶資料
             account_entity = self.auth_repo.find_account_by_email(email=data.email)
             
-            # 2. validation password
+            # 2. 驗證登入資訊
             pass_hash = account_entity.pass_hash
             pass_salt = account_entity.pass_salt
             if not auth_util.match_password(pass_hash=pass_hash, pw=data.password, pass_salt=pass_salt):
@@ -130,7 +129,7 @@ class AuthService:
                 data.password, 
                 pass_salt
             )
-            params = UpdatePasswordDAO(
+            params = UpdatePasswordDTO(
                 email=data.register_email,
                 pass_salt=pass_salt,
                 pass_hash=pass_hash,

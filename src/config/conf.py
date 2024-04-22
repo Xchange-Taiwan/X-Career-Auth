@@ -1,5 +1,7 @@
 import os
 
+
+SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
 LOCAL_REGION = os.getenv('LOCAL_REGION', 'ap-northeast-1')
 
 
@@ -7,15 +9,8 @@ LOCAL_REGION = os.getenv('LOCAL_REGION', 'ap-northeast-1')
 TOKEN_EXPIRE_TIME = int(os.getenv('TOKEN_EXPIRE_TIME', 60 * 60 * 24 * 30))
 
 
-# dynamodb conf
-LOCAL_DB = 'http://localhost:8000'
-DYNAMODB_URL = os.getenv('DYNAMODB_URL', None)
-
-
-# dynamodb table conf
-TABLE_AUTH = os.getenv('TABLE_AUTH', 'auth')
-TABLE_ACCOUNT = os.getenv('TABLE_ACCOUNT', 'accounts')
-TABLE_ACCOUNT_INDEX = os.getenv('TABLE_ACCOUNT_INDEX', 'account_indexs')
+# database conf
+# TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
 
 
