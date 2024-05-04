@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request, \
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.router.v1 import (
-    account,
+    auth,
 )
 from src.config import exception
 
@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 router_v1 = APIRouter(prefix='/auth-service/api/v1')
-router_v1.include_router(account.router)
+router_v1.include_router(auth.router)
 
 app.include_router(router_v1)
 
