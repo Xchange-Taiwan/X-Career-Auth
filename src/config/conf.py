@@ -5,10 +5,6 @@ SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
 LOCAL_REGION = os.getenv('LOCAL_REGION', 'ap-northeast-1')
 
 
-# cache conf
-TOKEN_EXPIRE_TIME = int(os.getenv('TOKEN_EXPIRE_TIME', 60 * 60 * 24 * 30))
-
-
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
