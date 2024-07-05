@@ -24,18 +24,18 @@ class NewAccountDTO(BaseModel):
         if account_type == AccountType.XC:
             pass_salt = gen_pass_salt()
             pass_hash = gen_password_hash(
-                pw=password, 
+                pw=self.password, 
                 pass_salt=pass_salt,
             )
 
             return AccountEntity(
                 aid=aid,
-                email=email,
+                email=self.email,
                 pass_hash=pass_hash,
                 pass_salt=pass_salt,
                 user_id=user_id,
                 account_type=account_type.value,
-                region=region,
+                region=self.region,
             )
 
         else:
@@ -55,3 +55,6 @@ class AccountVO(BaseModel):
     account_type: AccountType
     region: str
     user_id: int
+    
+    class Config:
+        use_enum_values = True

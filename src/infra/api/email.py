@@ -39,7 +39,7 @@ class Email:
             raise ServerException(msg='email_send_error')
 
 
-    async def send_conform_code(self, email: str, confirm_code: str) -> None:
+    async def send_conform_code(self, email: EmailStr, confirm_code: str) -> None:
         log.debug(f'send email: {email}, code: {confirm_code}')
         try:
             html_template = f'''
@@ -107,7 +107,7 @@ class Email:
             log.error(f'Error sending email: {e}')
 
 
-    async def send_reset_password_comfirm_email(self, email: str, token: str) -> None:
+    async def send_reset_password_comfirm_email(self, email: EmailStr, token: str) -> None:
         log.debug(f'send email: {email}, code: {token}')
         log.debug(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
         try:
