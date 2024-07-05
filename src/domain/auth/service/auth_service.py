@@ -1,17 +1,13 @@
 from typing import Any, Union, Callable, Optional
 from pydantic import EmailStr
 from decimal import Decimal
+from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 import uuid
 
 from src.config.constant import AccountType
-from ..repository.i_auth_repository import IAuthRepository
-from ..model import (
-    gateway_auth_model as gw,
-    auth_model as auth,
-)
+from ..dao.i_auth_repository import IAuthRepository
 from ..entity.auth_entity import AccountEntity
-from ..model.auth_model import UpdatePasswordDTO
 from ...message.model.email_model import *
 from ..model import (
     gateway_auth_model as gw,
@@ -35,13 +31,14 @@ class AuthService:
 
     async def send_code_by_email(
         self,
+        db: AsyncSession,
         data: ConfirmCodeDTO,
-        exist: bool = False,
     ):
         # entity = db schema
         account_entity: AccountEntity = None
         try:
-            account_entity = self.auth_repo.find_account_by_email(
+            account_entity = await self.auth_repo.find_account_by_email(
+                db=db,
                 email=data.email,
                 fields=['email', 'region']
             )
@@ -49,19 +46,19 @@ class AuthService:
             log.error(f'{self.__cls_name}.send_code_by_email [lack with account_entity] \
                 data:%s, account_entity:%s, err:%s',
                 data, account_entity, e.__str__())
-            raise NotFoundException(msg='incomplete_registered_user_information')
+            raise NotFoundException(msg='Incomplete registered user information')
                       
-        if not exist:
+        if not data.exist:
             if account_entity is None:
                 await self.email.send_conform_code(email=data.email, confirm_code=data.code)
                 return 'email_sent'
-            raise DuplicateUserException(msg='email_registered')
+            raise DuplicateUserException(msg='Email registered')
 
         else:
             if account_entity != None:
                 await self.email.send_conform_code(email=data.email, confirm_code=data.code)
                 return 'email_sent'
-            raise NotFoundException(msg='email_not_found')
+            raise NotFoundException(msg='Email not found')
 
     '''
     註冊流程
@@ -70,6 +67,7 @@ class AuthService:
     '''
     async def signup(
         self,
+        db: AsyncSession,
         data: auth.NewAccountDTO,
     ) -> (auth.AccountVO):
         # account schema
@@ -79,14 +77,17 @@ class AuthService:
             account_entity = data.gen_account_entity(AccountType.XC)
 
             # 2. 將帳戶資料寫入 DB
-            account_entity = self.auth_repo.create_account(account)
-            return auth.AccountVO.parse_obj(account_entity)
+            account_entity = await self.auth_repo.create_account(db, account_entity)
+            if account_entity is None:
+                raise ServerException(msg='Email already registered')
+            
+            return auth.AccountVO.parse_obj(account_entity.dict())
         
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] \
                 data:%s, account_entity:%s, err:%s',
-                data, account_entity, e.__str__())
-            raise ServerException(msg='unknown_err')
+                data, None if account_entity is None else account_entity.dict(), e.__str__())
+            raise_http_exception(e)
 
     '''
     登入流程
@@ -95,31 +96,35 @@ class AuthService:
     '''
     async def login(
         self,
+        db: AsyncSession,
         data: gw.LoginDTO,
     ) -> (auth.AccountVO):
         # account schema
         account_entity: AccountEntity = None
         try:
             # 1. 取得帳戶資料
-            account_entity = self.auth_repo.find_account_by_email(email=data.email)
+            account_entity = await self.auth_repo.find_account_by_email(db=db, email=data.email)
+            if account_entity is None:
+                raise NotFoundException(msg='Account not found')
             
             # 2. 驗證登入資訊
             pass_hash = account_entity.pass_hash
             pass_salt = account_entity.pass_salt
             if not auth_util.match_password(pass_hash=pass_hash, pw=data.password, pass_salt=pass_salt):
-                raise UnauthorizedException(msg='error_password')
+                raise UnauthorizedException(msg='Error password')
 
-            return auth.AccountVO.parse_obj(account_entity)
+            return auth.AccountVO.parse_obj(account_entity.dict())
         
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] \
                 data:%s, account_entity:%s, err:%s',
-                data, account_entity, e.__str__())
+                data, None if account_entity is None else account_entity.dict(), e.__str__())
             raise_http_exception(e)
     
 
     async def update_password(
         self,
+        db: AsyncSession,
         data: gw.UpdatePasswordDTO,
     ) -> (bool):
         account_entity: AccountEntity = None
@@ -129,40 +134,44 @@ class AuthService:
                 data.password, 
                 pass_salt
             )
-            params = UpdatePasswordDTO(
+            params = auth.UpdatePasswordDTO(
                 email=data.register_email,
                 pass_salt=pass_salt,
                 pass_hash=pass_hash,
             )
             
             if data.origin_password:
-                account_entity = self.auth_repo.find_account_by_email(email=data.register_email)
+                account_entity = await self.auth_repo.find_account_by_email(db=db, email=data.register_email)
                 if account_entity is None:
-                    raise NotFoundException(msg='account_not_found')
+                    raise NotFoundException(msg='Account not found')
                 
                 if not auth_util.match_password(
                     pass_hash=account_entity.pass_hash, 
                     pw=data.origin_password, 
                     pass_salt=account_entity.pass_salt,
                 ):
-                    raise ForbiddenException(msg='Invalid Password') 
+                    raise ForbiddenException(msg='Invalid password') 
 
-            return self.auth_repo.update_password(update_password_params=params)
+            success = await self.auth_repo.update_password(db=db, update_password_params=params)
+            if not success:
+                raise ServerException(msg='Email not found or update password failed')
+            return success
         
         except Exception as e:
             log.error(f'{self.__cls_name}.update_password [unknown_err] \
                 data:%s, account_entity:%s, err:%s',
-                data, account_entity, e.__str__())
+                data, None if account_entity is None else account_entity.dict(), e.__str__())
             raise_http_exception(e)
 
 
     async def send_reset_password_confirm_email(
         self,
+        db: AsyncSession,
         email: EmailStr
     ) -> str:
-        account_entity: AccountEntity = self.auth_repo.find_account_by_email(email=email, fields=['aid'])
+        account_entity: AccountEntity = await self.auth_repo.find_account_by_email(db=db, email=email, fields=['aid'])
         if not account_entity:
-            raise ServerException(msg='invalid account')
-        token = uuid.uuid1()
-        self.email.send_reset_password_comfirm_email(email=email, token=token)
+            raise ServerException(msg='Invalid account')
+        token = str(uuid.uuid4())
+        await self.email.send_reset_password_comfirm_email(email=email, token=token)
         return token

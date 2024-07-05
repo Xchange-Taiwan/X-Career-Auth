@@ -5,6 +5,7 @@ from typing import Optional
 class ConfirmCodeDTO(BaseModel):
     email: EmailStr
     code: str
+    exist: bool = False
 
 
 class EmailVO(BaseModel):

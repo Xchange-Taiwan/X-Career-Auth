@@ -12,10 +12,11 @@ TOKEN_EXPIRE_TIME = int(os.getenv('TOKEN_EXPIRE_TIME', 60 * 60 * 24 * 30))
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
+DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://myuser:mypassword@localhost:5432/xchange_local')
 
 
 # email conf
-EMAIL_SENDER = os.getenv('EMAIL_SENDER', None)
+EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'user@example.com')
 EMAIL_VERIFY_CODE_TEMPLATE = os.getenv('EMAIL_VERIFY_CODE_TEMPLATE', None)
 EMAIL_RESET_PASSWORD_TEMPLATE = os.getenv('EMAIL_RESET_PASSWORD_TEMPLATE', None)
 FRONTEND_RESET_PASSWORD_URL = os.getenv('FRONTEND_RESET_PASSWORD_URL', 'https://localhost:8002/auth/reset_password?token=')

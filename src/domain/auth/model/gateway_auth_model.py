@@ -14,7 +14,7 @@ class SignupDTO(BaseModel):
     
     @validator('password2')
     def passwords_match(cls, v, values, **kwargs):
-        if 'password1' in values and v != values['password1']:
+        if 'password' in values and v != values['password']:
             raise ClientException(msg='passwords do not match')
         return v
 
@@ -74,7 +74,7 @@ class ResetPasswordDTO(BaseModel):
     
     @validator('password2')
     def passwords_match(cls, v, values, **kwargs):
-        if 'password1' in values and v != values['password1']:
+        if 'password' in values and v != values['password']:
             raise ClientException(msg='passwords do not match')
         return v
     
@@ -89,7 +89,7 @@ class ResetPasswordDTO(BaseModel):
 
 
 class UpdatePasswordDTO(ResetPasswordDTO):
-    origin_password: str
+    origin_password: Optional[str]
 
     class Config:
         schema_extra = {

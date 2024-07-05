@@ -70,7 +70,7 @@ REGION_MAPPING = {
 
 HERE_WE_ARE = REGION_MAPPING[LOCAL_REGION]
 
-class AccountType(str, Enum):
-    XC = 'xc'
-    LINKEDIN = 'linkedin'
-    GOOGLE = 'google'
+class AccountType(Enum):
+    XC = 'XC'
+    GOOGLE = 'GOOGLE'
+    LINKEDIN = 'LINKEDIN'
