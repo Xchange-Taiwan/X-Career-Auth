@@ -29,7 +29,7 @@ _auth_service = AuthService(
 )
 
 router = APIRouter(
-    prefix='/auth',
+    prefix='',
     tags=['Auth'],
     responses={404: {'description': 'Not found'}},
 )

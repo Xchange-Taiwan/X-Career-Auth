@@ -42,7 +42,7 @@ class AuthService:
                 email=data.email,
                 fields=['email', 'region']
             )
-        except NotFoundError as e:
+        except Exception as e:
             log.error(f'{self.__cls_name}.send_code_by_email [lack with account_entity] \
                 data:%s, account_entity:%s, err:%s',
                 data, account_entity, e.__str__())
