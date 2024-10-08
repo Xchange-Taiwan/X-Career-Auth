@@ -2,13 +2,13 @@ import os
 
 
 SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
-LOCAL_REGION = os.getenv('LOCAL_REGION', 'ap-northeast-1')
+LOCAL_REGION = os.environ['AWS_REGION']
 
 
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
-DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://myuser:mypassword@localhost:5432/xchange_local')
+DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://myuser:mypassword@localhost:5432/postgres')
 
 
 # email conf

@@ -15,7 +15,7 @@ class Email:
         self.ses = boto3.client('ses', region_name=LOCAL_REGION)
 
     async def send_contact(self, recipient: EmailStr, subject: str, body: str) -> None:
-        log.debug(f'send email: {recipient}, subject: {subject}, body: {body}')
+        log.info(f'send email: {recipient}, subject: {subject}, body: {body}')
         try:
             response = self.ses.send_email(
                 Source=EMAIL_SENDER,
@@ -40,7 +40,7 @@ class Email:
 
 
     async def send_conform_code(self, email: EmailStr, confirm_code: str) -> None:
-        log.debug(f'send email: {email}, code: {confirm_code}')
+        log.info(f'send email: {email}, code: {confirm_code}')
         try:
             html_template = f'''
                 <!DOCTYPE html>
@@ -108,8 +108,8 @@ class Email:
 
 
     async def send_reset_password_comfirm_email(self, email: EmailStr, token: str) -> None:
-        log.debug(f'send email: {email}, code: {token}')
-        log.debug(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
+        log.info(f'send email: {email}, code: {token}')
+        log.info(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
         try:
             html_template = f'''
                 <!DOCTYPE html>

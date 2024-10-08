@@ -41,10 +41,10 @@ class AccountEntity(Base):
     __tablename__ = 'accounts'
 
     aid = Column(BigInteger, primary_key=True, autoincrement=True)
-    email = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
     email2 = Column(String(255))
     pass_hash = Column(String(60))
-    pass_salt = Column(String(29))
+    pass_salt = Column(String(60))
     oauth_id = Column(String(255))
     refresh_token = Column(String(255))
     user_id = Column(BigInteger, unique=True)
