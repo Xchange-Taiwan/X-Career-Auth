@@ -42,29 +42,29 @@ async def send_conform_code_by_email(
 ):
     res = await _auth_service.\
         send_code_by_email(db=db, data=payload)
-    return res_success(data=res)
+    return post_success(data=res)
 
 
 @router.post('/signup',
              responses=post_response('signup', auth.AccountVO),
-             status_code=201)
+             status_code=status.HTTP_201_CREATED)
 async def signup(
     payload: auth.NewAccountDTO = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     res = await _auth_service.signup(db, payload)
-    return res_success(data=res.dict())
+    return post_success(data=res.dict())
 
 
 @router.post('/login',
              responses=post_response('login', auth.AccountVO),
-             status_code=201)
+             status_code=status.HTTP_201_CREATED)
 async def login(
     payload: gw.LoginDTO = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     res = await _auth_service.login(db, payload)
-    return res_success(data=res.dict())
+    return post_success(data=res.dict())
 
 
 @router.put('/password/update')
