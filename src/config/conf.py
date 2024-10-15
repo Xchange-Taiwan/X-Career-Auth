@@ -12,10 +12,10 @@ DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://myuser:mypassword@localhost:5
 
 
 # email conf
-EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'user@example.com')
+EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'support@exchange.com')
 EMAIL_VERIFY_CODE_TEMPLATE = os.getenv('EMAIL_VERIFY_CODE_TEMPLATE', None)
 EMAIL_RESET_PASSWORD_TEMPLATE = os.getenv('EMAIL_RESET_PASSWORD_TEMPLATE', None)
-FRONTEND_RESET_PASSWORD_URL = os.getenv('FRONTEND_RESET_PASSWORD_URL', 'https://localhost:8002/auth/reset_password?token=')
+FRONTEND_RESET_PASSWORD_URL = os.getenv('FRONTEND_RESET_PASSWORD_URL', 'http://localhost:8002/auth/reset_password?token=')
 
 
 # Google App conf

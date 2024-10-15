@@ -26,16 +26,16 @@ package:
 provider:
   name: aws
   runtime: python3.9
-  region: ${opt:region, "ap-northeast-1"}
-  stage: ${opt:stage, "dev"}
+  region: ${env:THE_REGION}
+  stage: ${env:STAGE}
   timeout: 30
   iamRoleStatements:
   - Effect: Allow
     Action:
     - ses:SendEmail
     Resource:
-    - arn:aws:ses:ap-northeast-1:991681440467:identity/*
-    - arn:aws:ses:ap-northeast-1:991681440467:configuration-set/*
+    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:identity/*
+    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:configuration-set/*
 
 # you can define service wide environment variables here
 #  environment:
