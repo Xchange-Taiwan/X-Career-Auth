@@ -8,6 +8,11 @@ class ConfirmCodeDTO(BaseModel):
     exist: bool = False
 
 
+class SendEmailDTO(BaseModel):
+    email: EmailStr
+    exist: bool = False
+
+
 class EmailVO(BaseModel):
     sender_id: int  # user_id
     recipient_id: int  # user_id
