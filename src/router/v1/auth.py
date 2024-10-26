@@ -45,6 +45,16 @@ async def send_conform_code_by_email(
     return post_success(data=res)
 
 
+@router.post('/signup/email', status_code=status.HTTP_201_CREATED)
+async def send_signup_confirm_email(
+    payload: SendEmailDTO = Body(...),
+    db: AsyncSession = Depends(get_db),
+):
+    res = await _auth_service.\
+        send_link_by_email(db=db, data=payload)
+    return post_success(data=res)
+
+
 @router.post('/signup',
              responses=post_response('signup', auth.AccountVO),
              status_code=status.HTTP_201_CREATED)
@@ -74,6 +84,7 @@ async def update_password(
 ):
     await _auth_service.update_password(db, payload)
     return res_success(msg='update success')
+
 
 @router.get('/password/reset/email')
 async def send_reset_password_confirm_email(

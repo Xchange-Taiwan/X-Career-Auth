@@ -169,3 +169,53 @@ class Email:
         except Exception as e:
             log.error(f'Error sending email: {e}')
             raise ServerException(msg='email_send_reset_password_error')
+
+
+    async def send_signup_confirm_email(self, email: EmailStr, token: str) -> None:
+        log.info(f'send email: {email}, code: {token}')
+        log.info(f'{FRONTEND_SIGNUP_URL}{token}')
+        try:
+            html_template = f'''
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Welcome to {SITE_TITLE}!</title>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; }}
+                        .container {{ max-width: 600px; margin: 20px auto; padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }}
+                        .button {{ display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Welcome to {SITE_TITLE}!</h2>
+                        <p>Thank you for registering with us! Please confirm your email to complete your registration.</p>
+                        <a href="{FRONTEND_SIGNUP_URL}{token}" class="button">Confirm Your Email</a>
+                        <p>If you did not register for an account, please ignore this email or contact support if you have questions.</p>
+                        <p>Welcome aboard!</p>
+                    </div>
+                </body>
+                </html>
+            '''
+            response = self.ses.send_email(
+                Source=EMAIL_SENDER,
+                Destination={
+                    'ToAddresses': [email],
+                },
+                Message={
+                    'Subject': {'Data': f'{SITE_TITLE} - Confirm Your Registration'},
+                    'Body': {
+                        'Text': {'Data': 'Confirm Your Email'},
+                        'Html': {'Data': html_template},
+                    },
+                }
+            )
+            log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
+
+        except ClientError as e:
+            log.error(f'Error sending email: {e}') 
+            raise ServerException(msg='email_send_registration_error')
+
+        except Exception as e:
+            log.error(f'Error sending email: {e}')
+            raise ServerException(msg='email_send_registration_error')
