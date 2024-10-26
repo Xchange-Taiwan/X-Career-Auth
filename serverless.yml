@@ -11,21 +11,31 @@
 #
 # Happy Coding!
 
-service: X-Career-Auth
+service: x-career-auth
 # app and org for use with dashboard.serverless.com
-app: X-Career-Auth
+app: x-career-auth
 #org: your-org-name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 frameworkVersion: '3'
 
+package:
+  individually: true
+
 provider:
   name: aws
   runtime: python3.9
-  region: ${opt:region, "ap-northeast-1"}
-  stage: ${opt:stage, "dev"}
+  region: ${env:THE_REGION}
+  stage: ${env:STAGE}
   timeout: 30
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - ses:SendEmail
+    Resource:
+    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:identity/*
+    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:configuration-set/*
 
 # you can define service wide environment variables here
 #  environment:
@@ -44,7 +54,7 @@ custom:
     dockerizePip: true
     layer:
       name: x-career-auth
-      description: XChange Career - Auth
+      description: XChange - Auth
       compatibleRuntimes:
       - python3.9
 
@@ -55,10 +65,10 @@ functions:
       - "!requirements.txt"
       - "!package.json"
       - "!package-lock.json"
+      - "!.vscode/**"
       - "!.serverless/**"
-      - "!.venv/**"
+      - "!venv/**"
       - "!node_modules/**"
-      - "!integration/**"
       - "!test/**"
       - "!__pycache__/**"
       - "!**/__pycache__/**"
@@ -73,8 +83,13 @@ functions:
         method: any
         path: /{proxy+}
 
-  # hello:
-  #   handler: handler.hello
+plugins:
+- serverless-python-requirements
+
+
+
+# hello:
+#   handler: handler.hello
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

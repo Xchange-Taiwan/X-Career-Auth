@@ -42,23 +42,30 @@ class AuthService:
                 email=data.email,
                 fields=['email', 'region']
             )
-        except NotFoundError as e:
+        except Exception as e:
             log.error(f'{self.__cls_name}.send_code_by_email [lack with account_entity] \
                 data:%s, account_entity:%s, err:%s',
                 data, account_entity, e.__str__())
             raise NotFoundException(msg='Incomplete registered user information')
-                      
-        if not data.exist:
-            if account_entity is None:
-                await self.email.send_conform_code(email=data.email, confirm_code=data.code)
-                return 'email_sent'
-            raise DuplicateUserException(msg='Email registered')
 
-        else:
-            if account_entity != None:
-                await self.email.send_conform_code(email=data.email, confirm_code=data.code)
-                return 'email_sent'
-            raise NotFoundException(msg='Email not found')
+        try:          
+            if not data.exist:
+                if account_entity is None:
+                    await self.email.send_conform_code(email=data.email, confirm_code=data.code)
+                    return 'email_sent'
+                raise DuplicateUserException(msg='Email registered')
+
+            else:
+                if account_entity != None:
+                    await self.email.send_conform_code(email=data.email, confirm_code=data.code)
+                    return 'email_sent'
+                raise NotFoundException(msg='Email not found')
+            
+        except Exception as e:
+            log.error(f'{self.__cls_name}.send_code_by_email [email sending error] \
+                data:%s, account_entity:%s, err:%s',
+                data, account_entity, e.__str__())
+            raise_http_exception(e=e, msg=e.msg if e.msg else 'unknow_error')
 
     '''
     註冊流程

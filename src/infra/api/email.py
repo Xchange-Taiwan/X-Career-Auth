@@ -15,7 +15,7 @@ class Email:
         self.ses = boto3.client('ses', region_name=LOCAL_REGION)
 
     async def send_contact(self, recipient: EmailStr, subject: str, body: str) -> None:
-        log.debug(f'send email: {recipient}, subject: {subject}, body: {body}')
+        log.info(f'send email: {recipient}, subject: {subject}, body: {body}')
         try:
             response = self.ses.send_email(
                 Source=EMAIL_SENDER,
@@ -33,14 +33,15 @@ class Email:
 
         except ClientError as e:
             log.error(f'SES ClientError sending email: {e}')
+            raise ServerException(msg='email_send_contact_error')
 
         except Exception as e:
             log.error(f'Error sending email: {e}')
-            raise ServerException(msg='email_send_error')
+            raise ServerException(msg='email_send_contact_error')
 
 
     async def send_conform_code(self, email: EmailStr, confirm_code: str) -> None:
-        log.debug(f'send email: {email}, code: {confirm_code}')
+        log.info(f'send email: {email}, code: {confirm_code}')
         try:
             html_template = f'''
                 <!DOCTYPE html>
@@ -105,11 +106,16 @@ class Email:
 
         except ClientError as e:
             log.error(f'Error sending email: {e}')
+            raise ServerException(msg='email_send_conform_code_error')
+
+        except Exception as e:
+            log.error(f'Error sending email: {e}')
+            raise ServerException(msg='email_send_conform_code_error')
 
 
     async def send_reset_password_comfirm_email(self, email: EmailStr, token: str) -> None:
-        log.debug(f'send email: {email}, code: {token}')
-        log.debug(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
+        log.info(f'send email: {email}, code: {token}')
+        log.info(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
         try:
             html_template = f'''
                 <!DOCTYPE html>
@@ -158,3 +164,8 @@ class Email:
 
         except ClientError as e:
             log.error(f'Error sending email: {e}') 
+            raise ServerException(msg='email_send_reset_password_error')
+
+        except Exception as e:
+            log.error(f'Error sending email: {e}')
+            raise ServerException(msg='email_send_reset_password_error')
