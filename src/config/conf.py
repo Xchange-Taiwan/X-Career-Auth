@@ -2,7 +2,7 @@ import os
 
 
 SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
-LOCAL_REGION = os.environ['AWS_REGION']
+LOCAL_REGION = os.getenv('AWS_REGION', 'ap-northeast-1')
 
 
 # database conf
