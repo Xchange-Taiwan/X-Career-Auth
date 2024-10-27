@@ -1,23 +1,26 @@
 import os
 import json
-import boto3
+import aioboto3
 from pydantic import EmailStr
 from botocore.exceptions import ClientError
+from ..resource.handler.email_resource import SESResourceHandler
 from ...config.exception import *
 from ...config.conf import *
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
-class Email:
-    def __init__(self):
-        self.ses = boto3.client('ses', region_name=LOCAL_REGION)
+class EmailClient:
+    def __init__(self, ses: SESResourceHandler):
+        self.ses = ses
 
-    async def send_contact(self, recipient: EmailStr, subject: str, body: str) -> None:
+    async def send_content(self, recipient: EmailStr, subject: str, body: str) -> None:
         log.info(f'send email: {recipient}, subject: {subject}, body: {body}')
         try:
-            response = self.ses.send_email(
+            email_client = await self.ses.access()
+            response = await email_client.send_email(
                 Source=EMAIL_SENDER,
                 Destination={
                     'ToAddresses': [recipient],
@@ -33,11 +36,11 @@ class Email:
 
         except ClientError as e:
             log.error(f'SES ClientError sending email: {e}')
-            raise ServerException(msg='email_send_contact_error')
+            raise ServerException(msg='email_send_content_error')
 
         except Exception as e:
             log.error(f'Error sending email: {e}')
-            raise ServerException(msg='email_send_contact_error')
+            raise ServerException(msg='email_send_content_error')
 
 
     async def send_conform_code(self, email: EmailStr, confirm_code: str) -> None:
@@ -81,7 +84,8 @@ class Email:
                 </body>
                 </html>
             '''
-            response = self.ses.send_email(
+            email_client = await self.ses.access()
+            response = await email_client.send_email(
                 Source=EMAIL_SENDER,
                 Destination={
                     'ToAddresses': [email],
@@ -139,7 +143,8 @@ class Email:
                 </body>
                 </html>
             '''
-            response = self.ses.send_email(
+            email_client = await self.ses.access()
+            response = await email_client.send_email(
                 Source=EMAIL_SENDER,
                 Destination={
                     'ToAddresses': [email],
@@ -197,7 +202,8 @@ class Email:
                 </body>
                 </html>
             '''
-            response = self.ses.send_email(
+            email_client = await self.ses.access()
+            response = await email_client.send_email(
                 Source=EMAIL_SENDER,
                 Destination={
                     'ToAddresses': [email],
@@ -214,8 +220,8 @@ class Email:
 
         except ClientError as e:
             log.error(f'Error sending email: {e}') 
-            raise ServerException(msg='email_send_registration_error')
+            raise ServerException(msg='email_send_registration_link_error')
 
         except Exception as e:
             log.error(f'Error sending email: {e}')
-            raise ServerException(msg='email_send_registration_error')
+            raise ServerException(msg='email_send_registration_link_error')
