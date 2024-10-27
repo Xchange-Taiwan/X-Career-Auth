@@ -7,7 +7,6 @@ import uuid
 
 from src.config.constant import AccountType
 from ..dao.i_auth_repository import IAuthRepository
-from ..entity.auth_entity import AccountEntity
 from ...message.model.email_model import *
 from ..model import (
     gateway_auth_model as gw,
@@ -15,6 +14,7 @@ from ..model import (
 )
 from ....infra.util import auth_util
 from ....infra.client.email import EmailClient
+from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....config.constant import AccountType
 from ....config.exception import *
 import logging

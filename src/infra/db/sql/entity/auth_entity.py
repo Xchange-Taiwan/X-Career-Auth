@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum
-from ....config.constant import AccountType
+from .....config.constant import AccountType
 
 Base = declarative_base()
 

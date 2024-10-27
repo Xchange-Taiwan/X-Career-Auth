@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Dict, List, Any, Optional
 from pydantic import EmailStr, BaseModel
 from ..model.auth_model import UpdatePasswordDTO
-from ..entity.auth_entity import AccountEntity
+from ....infra.db.sql.entity.auth_entity import AccountEntity
 
 
 class IAuthRepository(ABC):

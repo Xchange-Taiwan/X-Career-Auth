@@ -1,8 +1,8 @@
 import json
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, EmailStr, validator
-from ..entity.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
+from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....config.constant import AccountType
 from ....config.exception import ClientException
 import logging
