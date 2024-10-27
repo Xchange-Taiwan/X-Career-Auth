@@ -10,9 +10,9 @@ log.basicConfig(filemode='w', level=log.INFO)
 class SignupDTO(BaseModel):
     email: EmailStr
     password: str
-    password2: str
-    
-    @validator('password2')
+    confirm_password: str
+
+    @validator('confirm_password')
     def passwords_match(cls, v, values, **kwargs):
         if 'password' in values and v != values['password']:
             raise ClientException(msg='passwords do not match')
@@ -23,7 +23,7 @@ class SignupDTO(BaseModel):
             'example': {
                 'email': 'user@example.com',
                 'password': 'secret',
-                'password2': 'secret',
+                'confirm_password': 'secret',
             },
         }
 
@@ -70,22 +70,22 @@ class SSOLoginDTO(BaseModel):
 class ResetPasswordDTO(BaseModel):
     register_email: EmailStr
     password: str
-    password2: str
-    
-    @validator('password2')
+    confirm_password: str
+
+    @validator('confirm_password')
     def passwords_match(cls, v, values, **kwargs):
         if 'password' in values and v != values['password']:
             raise ClientException(msg='passwords do not match')
         return v
-    
+
     class Config:
         schema_extra = {
-        'example': {
-            'register_email': 'user@example.com',
-            'password': 'secret',
-            'password2': 'secret',
-        },
-    }
+            'example': {
+                'register_email': 'user@example.com',
+                'password': 'secret',
+                'confirm_password': 'secret',
+            },
+        }
 
 
 class UpdatePasswordDTO(ResetPasswordDTO):
@@ -93,13 +93,13 @@ class UpdatePasswordDTO(ResetPasswordDTO):
 
     class Config:
         schema_extra = {
-        'example': {
-            'register_email': 'user@example.com',
-            'password': 'secret2',
-            'password2': 'secret2',
-            'origin_password': 'secret',
-        },
-    }
+            'example': {
+                'register_email': 'user@example.com',
+                'password': 'secret2',
+                'confirm_password': 'secret2',
+                'origin_password': 'secret',
+            },
+        }
 
 
 class BaseAuthDTO(BaseModel):
