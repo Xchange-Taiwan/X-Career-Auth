@@ -17,9 +17,11 @@ from ...infra.db.sql.orm.auth_repository import AuthRepository
 from ..res.response import *
 from ...config.databse import get_db
 from ...config.exception import *
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
 
 auth_repo = AuthRepository()
 email = Email()

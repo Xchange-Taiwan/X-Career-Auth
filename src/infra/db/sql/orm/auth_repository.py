@@ -6,9 +6,10 @@ from sqlalchemy.future import select
 from .....domain.auth.dao.i_auth_repository import IAuthRepository
 from .....domain.auth.entity.auth_entity import AccountEntity
 from .....domain.auth.model.auth_model import UpdatePasswordDTO
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class AuthRepository(IAuthRepository):

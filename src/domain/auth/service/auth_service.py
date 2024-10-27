@@ -17,9 +17,10 @@ from ....infra.util import auth_util
 from ....infra.api.email import Email
 from ....config.constant import AccountType
 from ....config.exception import *
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class AuthService:
