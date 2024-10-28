@@ -27,5 +27,4 @@ venv
 **.env*
 
 !deploy.sh
-!dev-env-deploy.sh
 !.env.example
