@@ -10,9 +10,9 @@ PROBE_CYCLE_SECS = int(os.getenv('PROBE_CYCLE_SECS', 3))
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
-DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://postgres:postgres@x-career-db-test.cu7knbzuvltn.ap-northeast-1.rds.amazonaws.com:5432/postgres')
+DB_URL = os.getenv('DB_URL', 'postgresql+asyncpg://user:password@localhost:5432/postgres')
 POOL_PRE_PING = bool(int(os.getenv('POOL_PRE_PING', '1'))) # 檢查連線狀態
-POOL_RECYCLE = int(os.getenv('POOL_RECYCLE', 30))  # 定期重置連線
+POOL_RECYCLE = int(os.getenv('POOL_RECYCLE', 300))  # 定期重置連線
 POOL_SIZE = int(os.getenv('POOL_SIZE', 10))         # 連線池大小
 MAX_OVERFLOW = int(os.getenv('MAX_OVERFLOW', 20))   # 超出連線池大小時，最大連線數
 AUTO_COMMIT = bool(int(os.getenv('AUTO_COMMIT', '0')))  # 自動提交
