@@ -1,4 +1,4 @@
-import os
+import os, asyncio
 from mangum import Mangum
 from fastapi import FastAPI, Request, \
     Header, Path, Query, Body, Form, \
@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, \
     APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from src.infra.resource.manager import io_resource_manager
 from src.router.v1 import (
     auth,
 )
@@ -44,11 +45,18 @@ async def execute_sql_file(filename):
     # 關閉連接
     await conn.close()
 
-@app.on_event("startup")
+
+@app.on_event('startup')
 async def startup_event():
     # 在 Lambda 啟動時執行 SQL 檔案
     await execute_sql_file('src/infra/db/sql/init/auth_init.sql')
+    await io_resource_manager.initial()
+    asyncio.create_task(io_resource_manager.keeping_probe())
 
+
+@app.on_event('shutdown')
+async def shutdown_event():
+    await io_resource_manager.close()
 
 
 app.add_middleware(

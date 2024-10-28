@@ -1,13 +1,14 @@
 import json
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, EmailStr, validator
-from ..entity.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
+from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....config.constant import AccountType
 from ....config.exception import ClientException
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class NewAccountDTO(BaseModel):

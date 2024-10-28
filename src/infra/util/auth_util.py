@@ -9,10 +9,10 @@ from snowflake import SnowflakeGenerator
 import hashlib
 from src.config.constant import AccountType
 from ...config.exception import *
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
-
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 
 '''SnowflakeGenerator group
