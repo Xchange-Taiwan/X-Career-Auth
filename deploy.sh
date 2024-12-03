@@ -60,5 +60,5 @@ rm "$BACKUP_FILE"
 
 if [ -f "$BACKUP_ENV-env-deploy.sh" ]; then
     echo "Deploying env params..."
-    sh $BACKUP_ENV-env-deploy.sh
+    sh $BACKUP_ENV-env-deploy.sh --account $AWS_PROFILE
 fi

@@ -11,6 +11,7 @@ from ....config.conf import (
     MAX_OVERFLOW,
     AUTO_COMMIT,
     AUTO_FLUSH,
+    PSQL_TENANT_NAMESPACES,
 )
 import logging
 
@@ -20,7 +21,7 @@ log = logging.getLogger(__name__)
 
 connect_args = {
     'server_settings': {
-        'search_path': 'public'
+        'search_path': PSQL_TENANT_NAMESPACES,
     }
 }
 

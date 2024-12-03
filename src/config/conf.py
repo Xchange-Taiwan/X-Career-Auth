@@ -18,6 +18,9 @@ MAX_OVERFLOW = int(os.getenv('MAX_OVERFLOW', 20))   # 超出連線池大小時�
 AUTO_COMMIT = bool(int(os.getenv('AUTO_COMMIT', '0')))  # 自動提交
 AUTO_FLUSH = bool(int(os.getenv('AUTO_FLUSH', '0')))    # 自動刷新
 
+# postgres 為多租戶設計的機制，透過 schema 來區分不同租戶的資料
+PSQL_TENANT_NAMESPACES = os.getenv('PSQL_TENANT_NAMESPACES', 'x-career-dev,public') # public x-career-dev
+
 
 # email conf
 EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'support@exchange.com')
