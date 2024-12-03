@@ -9,7 +9,7 @@
             "args": [
                 "main:app",
                 "--port",
-                "8007",
+                "8008",
                 "--reload"  // 添加 --reload 参数以启用自动重载
             ],
             "jinja": true,

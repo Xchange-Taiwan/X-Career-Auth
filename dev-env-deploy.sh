@@ -1,8 +1,21 @@
 #!/bin/bash
 
+# 取得 AWS 帳號別名，默認為 "default"
+AWS_PROFILE="default"
+
+# 解析命令行选项
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -a|--account) AWS_PROFILE="$2"; REGION=$(aws configure get region --profile "$2"); shift ;; # 指定 AWS 帳號；重新取得該帳號 region
+        *) echo "未知选项: $1"; exit 1 ;;  # 处理未知选项
+    esac
+    shift
+done
+
+
 # TODO: EMAIL_SENDER 部署後需修改成 xchange 測試帳號
 
-aws lambda update-function-configuration --function-name x-career-auth-dev-app --environment --profile xc "Variables={
+aws lambda update-function-configuration --function-name x-career-auth-dev-app --environment --profile $AWS_PROFILE "Variables={
 SITE_TITLE=X-Career,
 PROBE_CYCLE_SECS=3,
 BATCH_LIMIT=20,
@@ -13,6 +26,7 @@ POOL_SIZE=10,
 MAX_OVERFLOW=20,
 AUTO_COMMIT=0,
 AUTO_FLUSH=0,
+PSQL_TENANT_NAMESPACES='x-career-dev,public',
 EMAIL_SENDER=support@xchange.com,
 EMAIL_VERIFY_CODE_TEMPLATE=None,
 EMAIL_RESET_PASSWORD_TEMPLATE=None,

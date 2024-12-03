@@ -33,9 +33,8 @@ provider:
   - Effect: Allow
     Action:
     - ses:SendEmail
-    Resource:
-    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:identity/*
-    - arn:aws:ses:${env:THE_REGION}:${env:ACCOUNT_ID}:configuration-set/*
+    - ses:GetSendQuota
+    Resource: "*"
 
 # you can define service wide environment variables here
 #  environment:
@@ -51,7 +50,9 @@ provider:
 
 custom:
   pythonRequirements:
-    dockerizePip: true
+    dockerizePip: true # 使用 Docker 模擬 Lambda 環境安裝依賴
+    slim: true         # 減小依賴包大小
+    strip: true        # 移除多餘的文件
     layer:
       name: x-career-auth
       description: XChange - Auth
