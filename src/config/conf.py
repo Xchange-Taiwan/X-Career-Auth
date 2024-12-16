@@ -23,7 +23,7 @@ PSQL_TENANT_NAMESPACES = os.getenv('PSQL_TENANT_NAMESPACES', 'x-career-dev,publi
 
 
 # email conf
-EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'support@exchange.com')
+EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'testing_visitor@xchange.com.tw')
 EMAIL_VERIFY_CODE_TEMPLATE = os.getenv('EMAIL_VERIFY_CODE_TEMPLATE', None)
 EMAIL_RESET_PASSWORD_TEMPLATE = os.getenv('EMAIL_RESET_PASSWORD_TEMPLATE', None)
 FRONTEND_SIGNUP_URL = os.getenv('FRONTEND_SIGNUP_URL', 'http://localhost:8002/auth/signup?token=')
