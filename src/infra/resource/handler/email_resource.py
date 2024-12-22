@@ -37,8 +37,9 @@ class SESResourceHandler(ResourceHandler):
                 if self.email_client is None:
                     async with self.session.client('ses', config=ses_config) as email_client:
                         self.email_client = email_client
-                        send_quota = await self.email_client.get_send_quota()
-                        log.info('Email[SES] get_send_quota ResponseMetadata: %s', send_quota['ResponseMetadata'])
+                        # send_quota = await self.email_client.get_send_quota()
+                        # log.info('Email[SES] get_send_quota ResponseMetadata: %s', send_quota['ResponseMetadata'])
+                        log.info('Email[SES] email_client: %s', self.email_client)
 
         except Exception as e:
             log.error(e.__str__())
@@ -57,8 +58,9 @@ class SESResourceHandler(ResourceHandler):
     # Regular activation to maintain connections and connection pools
     async def probe(self):
         try:
-            send_quota = await self.email_client.get_send_quota()
-            log.info('Email[SES] get_send_quota HTTPStatusCode: %s', send_quota['ResponseMetadata']['HTTPStatusCode'])
+            # send_quota = await self.email_client.get_send_quota()
+            # log.info('Email[SES] get_send_quota HTTPStatusCode: %s', send_quota['ResponseMetadata']['HTTPStatusCode'])
+            log.info('Email[SES] email_client: %s', self.email_client)
         except Exception as e:
             log.error(f'Email[SES] Client Error: %s', e.__str__())
             await self.initial()
