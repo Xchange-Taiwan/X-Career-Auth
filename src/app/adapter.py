@@ -1,3 +1,4 @@
+from sqlalchemy.exc import SQLAlchemyError
 from ..infra.resource.handler import *
 from ..infra.resource.manager import io_resource_manager
 from ..infra.db.sql.orm.auth_repository import AuthRepository
@@ -12,12 +13,42 @@ email_rec = io_resource_manager.get('ses')
 sql_rsc = io_resource_manager.get('sql')
 
 
+################################################################
+# connection manager for db, cache, message queue ... etc ?
+################################################################
+
+# session with "manual" commit/rollback
+async def db_session():
+    session_local = await sql_rsc.access()
+    async with session_local() as session:
+        try:
+            yield session
+        except Exception or SQLAlchemyError as e:
+            raise
+        finally:
+            await session.close()  # Ensure session is closed
+
+
+# session with "auto" commit/rollback
+async def db_auto_session():
+    session_local = await sql_rsc.access()
+    async with session_local() as session:
+        try:
+            yield session
+            await session.commit()  # Commit on success
+        except Exception or SQLAlchemyError as e:
+            await session.rollback()  # Roll back on exception
+            raise
+        finally:
+            await session.close()  # Ensure session is closed
+
+
 ########################
 # client/repo/adapter
 ########################
 
 email_client = EmailClient(ses=email_rec)
-auth_repo = AuthRepository(db=sql_rsc)
+auth_repo = AuthRepository()
 
 
 ##############################
