@@ -10,17 +10,17 @@ from ....infra.db.sql.entity.auth_entity import AccountEntity
 class IAuthRepository(ABC):
 
     @abstractmethod
-    async def find_account_by_email(self, conn: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
+    async def find_account_by_email(self, db: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
         pass
 
     @abstractmethod
-    async def create_account(self, conn: AsyncSession, account: AccountEntity) -> (AccountEntity):
+    async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
         pass
 
     @abstractmethod
-    async def update_password(self, conn: AsyncSession, update_password_params: UpdatePasswordDTO) -> (int):
+    async def update_password(self, db: AsyncSession, update_password_params: UpdatePasswordDTO) -> (int):
         pass
 
     @abstractmethod
-    async def check_and_update_password(self, conn: AsyncSession, update_password_params: UpdatePasswordDTO, validate_function: Callable) -> (int):
+    async def check_and_update_password(self, db: AsyncSession, update_password_params: UpdatePasswordDTO, validate_function: Callable) -> (int):
         pass

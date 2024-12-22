@@ -26,24 +26,22 @@ log = logging.getLogger(__name__)
 
 class AuthService:
     def __init__(self,
-                 sql_rsc: SQLResourceHandler,
                  auth_repo: IAuthRepository,
                  email_client: EmailClient):
-        self.db = sql_rsc
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.__cls_name = self.__class__.__name__
 
     async def send_code_by_email(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # read db
         data: ConfirmCodeDTO,
     ):
         # entity = db schema
         account_entity: AccountEntity = None
         try:
             account_entity = await self.auth_repo.find_account_by_email(
-                conn=conn,
+                db=db,
                 email=data.email,
                 fields=['email', 'region']
             )
@@ -63,7 +61,7 @@ class AuthService:
                 raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email
+            log.error(f'{self.__cls_name}.send_code_by_email \
                       [database OR email sending error] data: % s, account_entity: % s, err: % s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send code by email')
@@ -71,7 +69,7 @@ class AuthService:
 
     async def send_link_by_email(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # read db
         data: SendEmailDTO,
     ):
         # entity = db schema
@@ -79,7 +77,7 @@ class AuthService:
         token: str = None
         try:
             account_entity = await self.auth_repo.find_account_by_email(
-                conn=conn,
+                db=db,
                 email=data.email,
                 fields=['email', 'region']
             )
@@ -100,7 +98,7 @@ class AuthService:
                     raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_link_by_email
+            log.error(f'{self.__cls_name}.send_link_by_email \
                       [database OR email sending error] data: % s, account_entity: % s, err: % s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send link by email')
@@ -116,7 +114,7 @@ class AuthService:
 
     async def signup(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # write db
         data: auth.NewAccountDTO,
     ) -> (auth.AccountVO):
         # account schema
@@ -126,7 +124,7 @@ class AuthService:
             account_entity = data.gen_account_entity(AccountType.XC)
 
             # 2. 將帳戶資料寫入 DB
-            account_entity = await self.auth_repo.create_account(conn, account_entity)
+            account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg='Email already registered')
 
@@ -146,14 +144,14 @@ class AuthService:
 
     async def login(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # read db
         data: gw.LoginDTO,
     ) -> (auth.AccountVO):
         # account schema
         account_entity: AccountEntity = None
         try:
             # 1. 取得帳戶資料
-            account_entity = await self.auth_repo.find_account_by_email(conn=conn, email=data.email)
+            account_entity = await self.auth_repo.find_account_by_email(db=db, email=data.email)
             if account_entity is None:
                 raise NotFoundException(msg='Account not found')
 
@@ -173,7 +171,7 @@ class AuthService:
 
     async def update_password(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # write db
         data: gw.UpdatePasswordDTO,
     ) -> (bool):
         account_entity: AccountEntity = None
@@ -192,7 +190,7 @@ class AuthService:
 
             if data.origin_password:
                 effect_row = await self.auth_repo.check_and_update_password(
-                    conn=conn,
+                    db=db,
                     update_password_params=params,
                     validate_function=auth_util.match_password)
                 if effect_row == 0:
@@ -202,7 +200,7 @@ class AuthService:
                     raise ForbiddenException(msg='Invalid password')
             else:
                 effect_row = await self.auth_repo.update_password(
-                    conn=conn,
+                    db=db,
                     update_password_params=params)
                 if effect_row == 0:
                     raise ServerException(
@@ -210,7 +208,7 @@ class AuthService:
             return True
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.update_password
+            log.error(f'{self.__cls_name}.update_password \
                       [unknown_err] data: % s, account_entity: % s, err: % s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to update password')
@@ -218,19 +216,19 @@ class AuthService:
 
     async def send_reset_password_confirm_email(
         self,
-        conn: AsyncSession,
+        db: AsyncSession, # read db
         email: EmailStr
     ) -> str:
         try:
             account_entity: AccountEntity = \
-                await self.auth_repo.find_account_by_email(conn=conn, email=email, fields=['aid'])
+                await self.auth_repo.find_account_by_email(db=db, email=email, fields=['aid'])
             if not account_entity:
                 raise ServerException(msg='Invalid account')
             token = str(uuid.uuid4())
             await self.email_client.send_reset_password_comfirm_email(email=email, token=token)
             return token
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_reset_password_confirm_email
+            log.error(f'{self.__cls_name}.send_reset_password_confirm_email \
                       [unknown_err] email: % s, err: % s', email, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send email')
             raise_http_exception(e=e, msg=err_msg)

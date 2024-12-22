@@ -1,5 +1,6 @@
 from typing import List, Optional, Callable
 from pydantic import EmailStr
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
@@ -17,7 +18,7 @@ class AuthRepository(IAuthRepository):
     def __init__(self):
         self.__cls_name = self.__class__.__name__
 
-    async def find_account_by_email(self, conn: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
+    async def find_account_by_email(self, db: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
         try:
             if fields == ['*']:
                 query = select(AccountEntity).where(
@@ -26,58 +27,59 @@ class AuthRepository(IAuthRepository):
                 query = select(*[getattr(AccountEntity, field)
                                  for field in fields]).where(AccountEntity.email == email)
 
-            result = await conn.execute(query)
+            result = await db.execute(query)
             account = result.scalar_one_or_none()
             return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_email: %s',
                       self.__cls_name, e)
-            await conn.rollback()
             return None
 
-    async def create_account(self, conn: AsyncSession, account: AccountEntity) -> (AccountEntity):
+    async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
         try:
-            conn.add(account)
-            await conn.commit()
-            await conn.refresh(account)
+            # await db.execute(text('BEGIN'))
+            db.add(account)
+            await db.commit()
+            await db.refresh(account)
             return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.create_account: %s',
                       self.__cls_name, e)
-            await conn.rollback()
+            await db.rollback()
             return None
 
-    async def update_password(self, conn: AsyncSession, update_password_params: UpdatePasswordDTO) -> (int):
+    async def update_password(self, db: AsyncSession, update_password_params: UpdatePasswordDTO) -> (int):
         try:
             query = select(AccountEntity).where(
                 AccountEntity.email == update_password_params.email)
 
-            result = await conn.execute(query)
+            result = await db.execute(query)
             account = result.scalar_one_or_none()
             # 0: 無資料
             if not account:
                 return 0
 
             # 1: 更新成功
+            # await db.execute(text('BEGIN'))
             account.pass_hash = update_password_params.pass_hash
             account.pass_salt = update_password_params.pass_salt
-            conn.add(account)
-            await conn.commit()
+            db.add(account)
+            await db.commit()
             return 1
         except SQLAlchemyError as e:
             log.error(f'Error in {self.__cls_name}.update_password: {e}')
-            await conn.rollback()
+            await db.rollback()
             return 0
 
     async def check_and_update_password(self,
-                                        conn: AsyncSession,
+                                        db: AsyncSession,
                                         update_password_params: UpdatePasswordDTO,
                                         validate_function: Callable) -> (int):
         try:
             query = select(AccountEntity).where(
                 AccountEntity.email == update_password_params.email)
 
-            result = await conn.execute(query)
+            result = await db.execute(query)
             account = result.scalar_one_or_none()
             # 0: 無資料
             if not account:
@@ -92,12 +94,13 @@ class AuthRepository(IAuthRepository):
                 return -1
 
             # 1: 更新成功
+            # await db.execute(text('BEGIN'))
             account.pass_hash = update_password_params.pass_hash
             account.pass_salt = update_password_params.pass_salt
-            conn.add(account)
-            await conn.commit()
+            db.add(account)
+            await db.commit()
             return 1
         except SQLAlchemyError as e:
             log.error(f'Error in {self.__cls_name}.update_password: {e}')
-            await conn.rollback()
+            await db.rollback()
             return 0
