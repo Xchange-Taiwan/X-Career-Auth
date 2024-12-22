@@ -45,8 +45,6 @@ class AuthService:
                 email=data.email,
                 fields=['email', 'region']
             )
-            if not account_entity:
-                raise NotFoundException(msg='Incomplete registered user')
 
             # email sending
             if not data.exist:
@@ -81,8 +79,6 @@ class AuthService:
                 email=data.email,
                 fields=['email', 'region']
             )
-            if not account_entity:
-                raise NotFoundException(msg='Incomplete registered user')
 
             # email sending
             token: str = str(uuid.uuid4())
