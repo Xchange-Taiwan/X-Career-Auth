@@ -53,7 +53,7 @@ async def signup(
     db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.signup(db, payload)
-    return post_success(data=res.dict())
+    return post_success(data=res.model_dump())
 
 
 @router.post('/login',
@@ -64,7 +64,7 @@ async def login(
     db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.login(db, payload)
-    return post_success(data=res.dict())
+    return post_success(data=res.model_dump())
 
 
 @router.put('/password/update')
