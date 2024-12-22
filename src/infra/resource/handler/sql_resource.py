@@ -37,8 +37,8 @@ class SQLResourceHandler(ResourceHandler):
         self.session = None
 
     async def initial(self):
-        try:
-            async with self.lock:
+        async with self.lock:
+            try:
                 if self.engine is not None:
                     await self.engine.dispose()
 
@@ -51,7 +51,8 @@ class SQLResourceHandler(ResourceHandler):
                 log.info('DB[SQL] Connection pool established.')
 
                 if self.session is not None:
-                    await self.session().close()
+                    async with self.session() as session:
+                        await session.close()
 
                 self.session = sessionmaker(
                     autocommit=AUTO_COMMIT,
@@ -59,13 +60,13 @@ class SQLResourceHandler(ResourceHandler):
                     bind=self.engine,
                     class_=AsyncSession)
 
-                async with self.session() as conn:
-                    await conn.execute(text('SELECT 1'))
+                async with self.session() as session:
+                    await session.execute(text('SELECT 1'))
                     log.info('DB[SQL] Session established & available.')
+                    await session.close()
 
-        except Exception as e:
-            log.error(e.__str__())
-            async with self.lock:
+            except Exception as e:
+                log.error(e.__str__())
                 if self.engine is not None:
                     await self.engine.dispose()
 
@@ -78,7 +79,8 @@ class SQLResourceHandler(ResourceHandler):
                 log.info('DB[SQL] Connection pool established.')
 
                 if self.session is not None:
-                    await self.session().close()
+                    async with self.session() as session:
+                        await session.close()
 
                 self.session = sessionmaker(
                     autocommit=AUTO_COMMIT,
@@ -86,24 +88,26 @@ class SQLResourceHandler(ResourceHandler):
                     bind=self.engine,
                     class_=AsyncSession)
 
-                async with self.session() as conn:
-                    await conn.execute(text('SELECT 1'))
+                async with self.session() as session:
+                    await session.execute(text('SELECT 1'))
                     log.info('DB[SQL] Session established & available.')
+                    await session.close()
 
     async def accessing(self, **kwargs):
         if self.engine is None or self.session is None:
             await self.initial()
 
         # 在同一次 request 中，使用同一個 session
-        return self.session()
+        return self.session
 
     # Regular activation to maintain connections and connection pools
 
     async def probe(self):
         try:
-            async with self.session() as conn:
-                await conn.execute(text('SELECT 1'))
+            async with self.session() as session:
+                await session.execute(text('SELECT 1'))
                 log.info('DB[SQL] Session is available. (probe)')
+                await session.close()
 
         except Exception as e:
             log.error(f'DB[SQL] Client Error: {e.__str__()}')
@@ -113,7 +117,8 @@ class SQLResourceHandler(ResourceHandler):
         try:
             async with self.lock:
                 if self.session is not None:
-                    await self.session().close()
+                    async with self.session() as session:
+                        await session.close()
                 if self.engine is not None:
                     await self.engine.dispose()
 

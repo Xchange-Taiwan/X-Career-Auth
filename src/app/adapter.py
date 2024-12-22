@@ -17,15 +17,30 @@ sql_rsc = io_resource_manager.get('sql')
 # connection manager for db, cache, message queue ... etc ?
 ################################################################
 
-async def db_conn():
-    async with sql_rsc.access() as conn:
+# session with "manual" commit/rollback
+async def db_session():
+    session_local = await sql_rsc.access()
+    async with session_local() as session:
         try:
-            yield conn
+            yield session
         except Exception or SQLAlchemyError as e:
-            await conn.rollback()  # Roll back on exception
             raise
         finally:
-            await conn.close()  # Ensure session is closed
+            await session.close()  # Ensure session is closed
+
+
+# session with "auto" commit/rollback
+async def db_auto_session():
+    session_local = await sql_rsc.access()
+    async with session_local() as session:
+        try:
+            yield session
+            await session.commit()  # Commit on success
+        except Exception or SQLAlchemyError as e:
+            await session.rollback()  # Roll back on exception
+            raise
+        finally:
+            await session.close()  # Ensure session is closed
 
 
 ########################
