@@ -60,7 +60,7 @@ class AuthService:
 
         except Exception as e:
             log.error(f'{self.__cls_name}.send_code_by_email \
-                      [database OR email sending error] data: % s, account_entity: % s, err: % s',
+                      [database OR email sending error] data: %s, account_entity: %s, err: %s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send code by email')
             raise_http_exception(e=e, msg=err_msg)
@@ -95,7 +95,7 @@ class AuthService:
 
         except Exception as e:
             log.error(f'{self.__cls_name}.send_link_by_email \
-                      [database OR email sending error] data: % s, account_entity: % s, err: % s',
+                      [database OR email sending error] data: %s, account_entity: %s, err: %s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send link by email')
             raise_http_exception(e=e, msg=err_msg)
@@ -205,7 +205,7 @@ class AuthService:
 
         except Exception as e:
             log.error(f'{self.__cls_name}.update_password \
-                      [unknown_err] data: % s, account_entity: % s, err: % s',
+                      [unknown_err] data: %s, account_entity: %s, err: %s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to update password')
             raise_http_exception(e=e, msg=err_msg)
@@ -225,6 +225,6 @@ class AuthService:
             return token
         except Exception as e:
             log.error(f'{self.__cls_name}.send_reset_password_confirm_email \
-                      [unknown_err] email: % s, err: % s', email, e.__str__())
+                      [unknown_err] email: %s, err: %s', email, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send email')
             raise_http_exception(e=e, msg=err_msg)
