@@ -47,20 +47,15 @@ class AuthService:
                 email=data.email,
                 fields=['email', 'region']
             )
-        except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email 
-                      [lack with account_entity] data:%s, account_entity:%s, err:%s',
-                      data, account_entity, e.__str__())
-            raise NotFoundException(
-                msg='Incomplete registered user information')
+            if not account_entity:
+                raise NotFoundException(msg='Incomplete registered user')
 
-        try:
+            # email sending
             if not data.exist:
                 if account_entity is None:
                     await self.email_client.send_conform_code(email=data.email, confirm_code=data.code)
                     return 'email_sent'
                 raise DuplicateUserException(msg='Email registered')
-
             else:
                 if account_entity != None:
                     await self.email_client.send_conform_code(email=data.email, confirm_code=data.code)
@@ -68,10 +63,10 @@ class AuthService:
                 raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email 
-                      [email sending error] data:%s, account_entity:%s, err:%s',
+            log.error(f'{self.__cls_name}.send_code_by_email
+                      [database OR email sending error] data: % s, account_entity: % s, err: % s',
                       data, account_entity, e.__str__())
-            err_msg = getattr(e, 'msg', 'Unable to send email')
+            err_msg = getattr(e, 'msg', 'Unable to send code by email')
             raise_http_exception(e=e, msg=err_msg)
 
     async def send_link_by_email(
@@ -81,27 +76,23 @@ class AuthService:
     ):
         # entity = db schema
         account_entity: AccountEntity = None
+        token: str = None
         try:
             account_entity = await self.auth_repo.find_account_by_email(
                 conn=conn,
                 email=data.email,
                 fields=['email', 'region']
             )
-        except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email 
-                      [lack with account_entity] data:%s, account_entity:%s, err:%s',
-                      data, account_entity, e.__str__())
-            raise NotFoundException(
-                msg='Incomplete registered user information')
+            if not account_entity:
+                raise NotFoundException(msg='Incomplete registered user')
 
-        token = str(uuid.uuid4())
-        try:
+            # email sending
+            token: str = str(uuid.uuid4())
             if not data.exist:
                 if account_entity is None:
                     await self.email_client.send_signup_confirm_email(email=data.email, token=token)
                 else:
                     raise DuplicateUserException(msg='Email registered')
-
             else:
                 if account_entity != None:
                     await self.email_client.send_signup_confirm_email(email=data.email, token=token)
@@ -109,10 +100,10 @@ class AuthService:
                     raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email 
-                      [email sending error] data:%s, account_entity:%s, err:%s',
+            log.error(f'{self.__cls_name}.send_link_by_email
+                      [database OR email sending error] data: % s, account_entity: % s, err: % s',
                       data, account_entity, e.__str__())
-            err_msg = getattr(e, 'msg', 'Unable to send email')
+            err_msg = getattr(e, 'msg', 'Unable to send link by email')
             raise_http_exception(e=e, msg=err_msg)
 
         return {'token': token}
@@ -144,7 +135,8 @@ class AuthService:
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
-            raise_http_exception(e)
+            err_msg = getattr(e, 'msg', 'Unable to signup')
+            raise_http_exception(e=e, msg=err_msg)
 
     '''
     登入流程
@@ -176,7 +168,8 @@ class AuthService:
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
-            raise_http_exception(e)
+            err_msg = getattr(e, 'msg', 'Unable to login')
+            raise_http_exception(e=e, msg=err_msg)
 
     async def update_password(
         self,
@@ -194,7 +187,7 @@ class AuthService:
                 email=data.register_email,
                 pass_salt=pass_salt,
                 pass_hash=pass_hash,
-                origin_password=data.origin_password,
+                origin_password=data.origin_password,  # for password validation in repository
             )
 
             if data.origin_password:
@@ -217,10 +210,11 @@ class AuthService:
             return True
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.update_password 
-                      [unknown_err] data:%s, account_entity:%s, err:%s',
+            log.error(f'{self.__cls_name}.update_password
+                      [unknown_err] data: % s, account_entity: % s, err: % s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
-            raise_http_exception(e)
+            err_msg = getattr(e, 'msg', 'Unable to update password')
+            raise_http_exception(e=e, msg=err_msg)
 
     async def send_reset_password_confirm_email(
         self,
@@ -236,6 +230,7 @@ class AuthService:
             await self.email_client.send_reset_password_comfirm_email(email=email, token=token)
             return token
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_reset_password_confirm_email 
-                      [unknown_err] email:%s, err:%s', email, e.__str__())
-            raise_http_exception(e)
+            log.error(f'{self.__cls_name}.send_reset_password_confirm_email
+                      [unknown_err] email: % s, err: % s', email, e.__str__())
+            err_msg = getattr(e, 'msg', 'Unable to send email')
+            raise_http_exception(e=e, msg=err_msg)
