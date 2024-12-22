@@ -48,6 +48,8 @@ class UpdatePasswordDTO(BaseModel):
     pass_hash: str
     pass_salt: str
     email: EmailStr
+    # NOTE: for password validation in repository
+    origin_password: Optional[str] = None
 
 
 class AccountVO(BaseModel):
