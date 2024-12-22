@@ -63,7 +63,7 @@ class SSOLoginDTO(BaseModel):
     sso_type: Optional[str]
 
     def to_dict(self):
-        d = super().dict()
+        d = super().model_dump()
         d.pop('sso_type', None)
         return d
 

@@ -124,7 +124,7 @@ class AuthService:
             if account_entity is None:
                 raise ServerException(msg='Email already registered')
 
-            return auth.AccountVO.parse_obj(account_entity.dict())
+            return auth.AccountVO.model_validate(account_entity.dict())
 
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
@@ -157,7 +157,7 @@ class AuthService:
             if not auth_util.match_password(pass_hash=pass_hash, pw=data.password, pass_salt=pass_salt):
                 raise UnauthorizedException(msg='Error password')
 
-            return auth.AccountVO.parse_obj(account_entity.dict())
+            return auth.AccountVO.model_validate(account_entity.dict())
 
         except Exception as e:
             log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
