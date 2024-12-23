@@ -50,10 +50,6 @@ class SQLResourceHandler(ResourceHandler):
                     max_overflow=MAX_OVERFLOW)
                 log.info('DB[SQL] Connection pool established.')
 
-                if self.session is not None:
-                    async with self.session() as session:
-                        await session.close()
-
                 self.session = sessionmaker(
                     autocommit=AUTO_COMMIT,
                     autoflush=AUTO_FLUSH,
@@ -78,10 +74,6 @@ class SQLResourceHandler(ResourceHandler):
                     max_overflow=MAX_OVERFLOW)
                 log.info('DB[SQL] Connection pool established.')
 
-                if self.session is not None:
-                    async with self.session() as session:
-                        await session.close()
-
                 self.session = sessionmaker(
                     autocommit=AUTO_COMMIT,
                     autoflush=AUTO_FLUSH,
@@ -100,8 +92,8 @@ class SQLResourceHandler(ResourceHandler):
         # 在同一次 request 中，使用同一個 session
         return self.session
 
-    # Regular activation to maintain connections and connection pools
 
+    # Regular activation to maintain connections and connection pools
     async def probe(self):
         try:
             async with self.session() as session:
@@ -116,11 +108,9 @@ class SQLResourceHandler(ResourceHandler):
     async def close(self):
         try:
             async with self.lock:
-                if self.session is not None:
-                    async with self.session() as session:
-                        await session.close()
                 if self.engine is not None:
                     await self.engine.dispose()
+                    log.info('DB[SQL] Connection pool disposed.')
 
         except Exception as e:
             log.error(f'DB[SQL] Client Error: {e.__str__()}')
