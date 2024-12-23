@@ -1,6 +1,6 @@
 import json
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator, ValidationInfo
 from ....config.exception import ClientException
 import logging
 
@@ -13,9 +13,9 @@ class SignupDTO(BaseModel):
     password: str
     confirm_password: str
 
-    @validator('confirm_password')
-    def passwords_match(cls, v, values, **kwargs):
-        if 'password' in values and v != values['password']:
+    @field_validator('confirm_password')
+    def passwords_match(cls, v, values: ValidationInfo):
+        if v != values.data.get('password', None):
             raise ClientException(msg='passwords do not match')
         return v
 
@@ -73,9 +73,9 @@ class ResetPasswordDTO(BaseModel):
     password: str
     confirm_password: str
 
-    @validator('confirm_password')
-    def passwords_match(cls, v, values, **kwargs):
-        if 'password' in values and v != values['password']:
+    @field_validator('confirm_password')
+    def passwords_match(cls, v, values: ValidationInfo):
+        if v != values.data.get('password', None):
             raise ClientException(msg='passwords do not match')
         return v
 

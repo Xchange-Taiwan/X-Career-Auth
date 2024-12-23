@@ -33,7 +33,7 @@ provider:
   - Effect: Allow
     Action:
     - ses:SendEmail
-    # - ses:GetSendQuota
+    - ses:GetSendQuota
     Resource: "*"
 
 # you can define service wide environment variables here
