@@ -35,6 +35,23 @@ class AuthRepository(IAuthRepository):
                       self.__cls_name, e)
             return None
 
+    async def find_account_by_oauth_id(self, db: AsyncSession, oauth_id: str, fields: List = ['*']) -> (Optional[AccountEntity]):
+        try:
+            if fields == ['*']:
+                query = select(AccountEntity).where(
+                    AccountEntity.oauth_id == oauth_id)
+            else:
+                query = select(*[getattr(AccountEntity, field)
+                                 for field in fields]).where(AccountEntity.oauth_id == oauth_id)
+
+            result = await db.execute(query)
+            account = result.scalar_one_or_none()
+            return account
+        except SQLAlchemyError as e:
+            log.error(f'Error in %s.find_account_by_oauth_id: %s',
+                      self.__cls_name, e)
+            return None
+
     async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
         try:
             # await db.execute(text('BEGIN'))

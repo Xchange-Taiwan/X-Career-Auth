@@ -24,6 +24,7 @@ var/
 .idea
 node_modules
 venv
+.venv
 **/**__pycache__
 **.db
 

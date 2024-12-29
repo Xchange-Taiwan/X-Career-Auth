@@ -56,6 +56,17 @@ async def signup(
     return post_success(data=res.dict())
 
 
+@router.post('/signup/oauth',
+             responses=post_response('signup_oauth', auth.AccountOauthVO),
+             status_code=status.HTTP_201_CREATED)
+async def signup_oauth(
+    payload: auth.NewOauthAccountDTO = Body(...),
+    db: AsyncSession = Depends(db_session),
+):
+    res = await _auth_service.signup_oauth(db, payload)
+    return post_success(data=res.dict())
+
+
 @router.post('/login',
              responses=post_response('login', auth.AccountVO),
              status_code=status.HTTP_201_CREATED)
@@ -64,6 +75,17 @@ async def login(
     db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.login(db, payload)
+    return post_success(data=res.dict())
+
+
+@router.post('/login/oauth',
+             responses=post_response('login_oauth', auth.AccountOauthVO),
+             status_code=status.HTTP_201_CREATED)
+async def login_oauth(
+    payload: gw.LoginOauthDTO = Body(...),
+    db: AsyncSession = Depends(db_session),
+):
+    res = await _auth_service.login_oauth(db, payload)
     return post_success(data=res.dict())
 
 

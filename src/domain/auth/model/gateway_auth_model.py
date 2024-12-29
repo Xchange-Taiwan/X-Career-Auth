@@ -44,6 +44,19 @@ class SignupConfirmDTO(BaseModel):
         }
 
 
+class LoginOauthDTO(BaseModel):
+    email: EmailStr
+    oauth_id: str
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'email': 'user@example.com',
+                'oauth_id': 'oauth_id',
+            },
+        }
+
+
 class LoginDTO(BaseModel):
     email: EmailStr
     password: str
