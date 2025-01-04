@@ -3,6 +3,7 @@ from ..infra.resource.handler import *
 from ..infra.resource.manager import io_resource_manager
 from ..infra.db.sql.orm.auth_repository import AuthRepository
 from ..infra.client.email import EmailClient
+from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
 
 ###############################################
@@ -48,6 +49,7 @@ async def db_auto_session():
 ########################
 
 email_client = EmailClient(ses=email_rec)
+http_request = AsyncServiceApiAdapter()
 auth_repo = AuthRepository()
 
 
@@ -58,4 +60,5 @@ auth_repo = AuthRepository()
 _auth_service = AuthService(
     auth_repo=auth_repo,
     email_client=email_client,
+    http_request=http_request,
 )

@@ -49,6 +49,7 @@ class NewOauthAccountDTO(BaseModel):
     region: str
     email: EmailStr
     oauth_id: str
+    access_token: str
 
     # TODO: implement, no Dict
     def gen_account_entity(self, account_type: AccountType) -> (AccountEntity):
