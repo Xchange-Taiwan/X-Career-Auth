@@ -40,9 +40,11 @@ class ReservationListState(Enum):
     PENDING = 'pending'
     HISTORY = 'history'
 
+
 class SortingBy(Enum):
     UPDATED_TIME = 'updated_time'
     # VIEW = 'view'
+
 
 class Sorting(Enum):
     ASC = 1
@@ -70,7 +72,12 @@ REGION_MAPPING = {
 
 HERE_WE_ARE = REGION_MAPPING[LOCAL_REGION]
 
+
 class AccountType(Enum):
     XC = 'XC'
     GOOGLE = 'GOOGLE'
     LINKEDIN = 'LINKEDIN'
+
+
+class OauthType(Enum):
+    GOOGLE = 'GOOGLE'

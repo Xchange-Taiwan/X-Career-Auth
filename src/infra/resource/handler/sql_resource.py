@@ -43,7 +43,7 @@ class SQLResourceHandler(ResourceHandler):
                     await self.engine.dispose()
 
                 self.engine = create_async_engine(
-                    DB_URL,
+                    'postgresql+asyncpg://kao:password@localhost:5432/postgres',
                     connect_args=connect_args,
                     pool_pre_ping=POOL_PRE_PING,
                     pool_size=POOL_SIZE,
@@ -92,8 +92,8 @@ class SQLResourceHandler(ResourceHandler):
         # 在同一次 request 中，使用同一個 session
         return self.session
 
-
     # Regular activation to maintain connections and connection pools
+
     async def probe(self):
         try:
             async with self.session() as session:

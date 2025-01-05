@@ -1,3 +1,6 @@
+-- Create unique index with oauth_id and email
+CREATE UNIQUE INDEX uidx_accounts_oauth_id ON accounts (oauth_id);
+CREATE UNIQUE INDEX uidx_accounts_email ON accounts (email);
 
 -- 创建 ENUM 类型，仅当不存在时
 DO $$

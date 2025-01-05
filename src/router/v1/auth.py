@@ -14,6 +14,7 @@ from ...domain.message.model.email_model import *
 from ...app.adapter import _auth_service, db_session
 from ..res.response import *
 from ...config.exception import *
+from ...config.constant import OauthType
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -56,14 +57,18 @@ async def signup(
     return post_success(data=res.dict())
 
 
-@router.post('/signup/oauth',
+@router.post('/signup/oauth/{auth_type}',
              responses=post_response('signup_oauth', auth.AccountOauthVO),
              status_code=status.HTTP_201_CREATED)
 async def signup_oauth(
     payload: auth.NewOauthAccountDTO = Body(...),
     db: AsyncSession = Depends(db_session),
+    auth_type: OauthType = Path(...)
 ):
-    res = await _auth_service.signup_oauth(db, payload)
+    if auth_type == OauthType.GOOGLE:
+        res = await _auth_service.signup_oauth_google(db, payload)
+    else:
+        raise ServerException('Invalid oauth type')
     return post_success(data=res.dict())
 
 
@@ -78,14 +83,18 @@ async def login(
     return post_success(data=res.dict())
 
 
-@router.post('/login/oauth',
+@router.post('/login/oauth/{auth_type}',
              responses=post_response('login_oauth', auth.AccountOauthVO),
              status_code=status.HTTP_201_CREATED)
 async def login_oauth(
     payload: gw.LoginOauthDTO = Body(...),
     db: AsyncSession = Depends(db_session),
+    auth_type: OauthType = Path(...)
 ):
-    res = await _auth_service.login_oauth(db, payload)
+    if auth_type == OauthType.GOOGLE:
+        res = await _auth_service.login_oauth_google(db, payload)
+    else:
+        raise ServerException('Invalid oauth type')
     return post_success(data=res.dict())
 
 

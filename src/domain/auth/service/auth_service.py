@@ -143,7 +143,7 @@ class AuthService:
         3. 將帳戶資料及oauth_id寫入 DB
     '''
 
-    async def signup_oauth(
+    async def signup_oauth_google(
         self,
         db: AsyncSession,  # write db
         data: auth.NewOauthAccountDTO,
@@ -213,7 +213,7 @@ class AuthService:
         2. 驗證登入資訊
     '''
 
-    async def login_oauth(
+    async def login_oauth_google(
         self,
         db: AsyncSession,  # read db
         data: gw.LoginOauthDTO,
