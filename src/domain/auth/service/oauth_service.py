@@ -14,7 +14,7 @@ from ..model import (
     gateway_auth_model as gw,
     auth_model as auth,
 )
-from ....infra.util import auth_util
+from ....infra.util.auth_util import *
 from ....infra.client.email import EmailClient
 from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
@@ -36,7 +36,7 @@ class OauthService(AuthService):
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.http_request = http_request
-        self.__cls_name = self.__class__.__name__
+        self.cls_name = self.__class__.__name__
 
     """
     OAuth註冊流程
@@ -72,7 +72,7 @@ class OauthService(AuthService):
 
         except Exception as e:
             log.error(
-                f"{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
+                f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
                 None if account_entity is None else account_entity.dict(),
                 e.__str__(),
@@ -112,7 +112,7 @@ class OauthService(AuthService):
 
         except Exception as e:
             log.error(
-                f"{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
+                f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
                 None if account_entity is None else account_entity.dict(),
                 e.__str__(),

@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 class AuthRepository(IAuthRepository):
 
     def __init__(self):
-        self.__cls_name = self.__class__.__name__
+        self.cls_name = self.__class__.__name__
 
     async def find_account_by_email(self, db: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
         try:
@@ -32,7 +32,7 @@ class AuthRepository(IAuthRepository):
             return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_email: %s',
-                      self.__cls_name, e)
+                      self.cls_name, e)
             return None
 
     async def find_account_by_oauth_id(self, db: AsyncSession, oauth_id: str, fields: List = ['*']) -> (Optional[AccountEntity]):
@@ -49,7 +49,7 @@ class AuthRepository(IAuthRepository):
             return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_oauth_id: %s',
-                      self.__cls_name, e)
+                      self.cls_name, e)
             return None
 
     async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
@@ -61,7 +61,7 @@ class AuthRepository(IAuthRepository):
             return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.create_account: %s',
-                      self.__cls_name, e)
+                      self.cls_name, e)
             await db.rollback()
             return None
 
@@ -84,7 +84,7 @@ class AuthRepository(IAuthRepository):
             await db.commit()
             return 1
         except SQLAlchemyError as e:
-            log.error(f'Error in {self.__cls_name}.update_password: {e}')
+            log.error(f'Error in {self.cls_name}.update_password: {e}')
             await db.rollback()
             return 0
 
@@ -118,6 +118,6 @@ class AuthRepository(IAuthRepository):
             await db.commit()
             return 1
         except SQLAlchemyError as e:
-            log.error(f'Error in {self.__cls_name}.update_password: {e}')
+            log.error(f'Error in {self.cls_name}.update_password: {e}')
             await db.rollback()
             return 0

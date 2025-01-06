@@ -34,7 +34,7 @@ class AuthService:
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.http_request = http_request
-        self.__cls_name = self.__class__.__name__
+        self.cls_name = self.__class__.__name__
 
     async def send_code_by_email(
         self,
@@ -63,7 +63,7 @@ class AuthService:
                 raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_code_by_email \
+            log.error(f'{self.cls_name}.send_code_by_email \
                       [database OR email sending error] data: %s, account_entity: %s, err: %s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send code by email')
@@ -98,7 +98,7 @@ class AuthService:
                     raise NotFoundException(msg='Email not found')
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_link_by_email \
+            log.error(f'{self.cls_name}.send_link_by_email \
                       [database OR email sending error] data: %s, account_entity: %s, err: %s',
                       data, account_entity, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send link by email')
@@ -131,7 +131,7 @@ class AuthService:
             return auth.AccountVO.parse_obj(account_entity.dict())
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
+            log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to signup')
             raise_http_exception(e=e, msg=err_msg)
@@ -169,7 +169,7 @@ class AuthService:
     #             raise ServerException(msg='Your google account is not valid')
 
     #     except Exception as e:
-    #         log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
+    #         log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
     #                   data, None if account_entity is None else account_entity.dict(), e.__str__())
     #         err_msg = getattr(e, 'msg', 'Unable to signup')
     #         raise_http_exception(e=e, msg=err_msg)
@@ -202,7 +202,7 @@ class AuthService:
             return auth.AccountVO.parse_obj(account_entity.dict())
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
+            log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to login')
             raise_http_exception(e=e, msg=err_msg)
@@ -235,7 +235,7 @@ class AuthService:
     #             raise ServerException(msg='Your google account is not valid')
 
     #     except Exception as e:
-    #         log.error(f'{self.__cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
+    #         log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
     #                   data, None if account_entity is None else account_entity.dict(), e.__str__())
     #         err_msg = getattr(e, 'msg', 'Unable to login')
     #         raise_http_exception(e=e, msg=err_msg)
@@ -279,7 +279,7 @@ class AuthService:
             return True
 
         except Exception as e:
-            log.error(f'{self.__cls_name}.update_password \
+            log.error(f'{self.cls_name}.update_password \
                       [unknown_err] data: %s, account_entity: %s, err: %s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to update password')
@@ -299,7 +299,7 @@ class AuthService:
             await self.email_client.send_reset_password_comfirm_email(email=email, token=token)
             return token
         except Exception as e:
-            log.error(f'{self.__cls_name}.send_reset_password_confirm_email \
+            log.error(f'{self.cls_name}.send_reset_password_confirm_email \
                       [unknown_err] email: %s, err: %s', email, e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to send email')
             raise_http_exception(e=e, msg=err_msg)
