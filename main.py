@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.infra.resource.manager import io_resource_manager
 from src.router.v1 import (
-    auth,
+    auth, oauth,
 )
 from src.config import exception
 
@@ -40,7 +40,7 @@ app.add_middleware(
 
 router_v1 = APIRouter(prefix='/auth-service/api/v1')
 router_v1.include_router(auth.router)
-
+router_v1.include_router(oauth.router)
 app.include_router(router_v1)
 
 exception.include_app(app)

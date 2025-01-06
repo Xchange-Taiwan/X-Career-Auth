@@ -5,7 +5,7 @@ from ..infra.db.sql.orm.auth_repository import AuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
-
+from ..domain.auth.service.oauth_service import OauthService
 ###############################################
 # session/resource/connection/connect pool
 ###############################################
@@ -58,6 +58,11 @@ auth_repo = AuthRepository()
 ##############################
 
 _auth_service = AuthService(
+    auth_repo=auth_repo,
+    email_client=email_client,
+    http_request=http_request,
+)
+_oauth_service = OauthService(
     auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,

@@ -80,7 +80,7 @@ class UpdatePasswordDTO(BaseModel):
 class AccountVO(BaseModel):
     aid: int
     email: EmailStr
-    account_type: AccountType
+    account_type: AccountType = Field(default=AccountType.XC)
     region: str
     user_id: int
 
@@ -89,5 +89,12 @@ class AccountVO(BaseModel):
 
 
 class AccountOauthVO(AccountVO):
+    aid: int
+    email: EmailStr
     oauth_id: str
     account_type: AccountType = Field(default=AccountType.GOOGLE)
+    region: str
+    user_id: int
+
+    class Config:
+        use_enum_values = True
