@@ -105,7 +105,8 @@ class OauthService(AuthService):
                 raise NotFoundException(msg="Account not found")
 
             # 2. 驗證登入資訊
-            if response_json.res_json.get("sub") == account_entity.oauth_id:
+            oauth_id = str(response_json.res_json.get("sub"))
+            if oauth_id == account_entity.oauth_id:
                 return auth.AccountOauthVO.parse_obj(account_entity.dict())
             else:
                 raise ServerException(msg="Your google account is not valid")
