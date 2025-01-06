@@ -57,21 +57,6 @@ async def signup(
     return post_success(data=res.dict())
 
 
-# @router.post('/signup/oauth/{auth_type}',
-#              responses=post_response('signup_oauth', auth.AccountOauthVO),
-#              status_code=status.HTTP_201_CREATED)
-# async def signup_oauth(
-#     payload: auth.NewOauthAccountDTO = Body(...),
-#     db: AsyncSession = Depends(db_session),
-#     auth_type: OauthType = Path(...)
-# ):
-#     if auth_type == OauthType.GOOGLE:
-#         res = await _auth_service.signup_oauth_google(db, payload)
-#     else:
-#         raise ServerException('Invalid oauth type')
-#     return post_success(data=res.dict())
-
-
 @router.post('/login',
              responses=post_response('login', auth.AccountVO),
              status_code=status.HTTP_201_CREATED)
@@ -81,21 +66,6 @@ async def login(
 ):
     res = await _auth_service.login(db, payload)
     return post_success(data=res.dict())
-
-
-# @router.post('/login/oauth/{auth_type}',
-#              responses=post_response('login_oauth', auth.AccountOauthVO),
-#              status_code=status.HTTP_201_CREATED)
-# async def login_oauth(
-#     payload: gw.LoginOauthDTO = Body(...),
-#     db: AsyncSession = Depends(db_session),
-#     auth_type: OauthType = Path(...)
-# ):
-#     if auth_type == OauthType.GOOGLE:
-#         res = await _auth_service.login_oauth_google(db, payload)
-#     else:
-#         raise ServerException('Invalid oauth type')
-#     return post_success(data=res.dict())
 
 
 @router.put('/password/update')
