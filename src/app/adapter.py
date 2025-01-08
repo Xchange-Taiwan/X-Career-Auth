@@ -52,6 +52,13 @@ async def db_auto_session():
             await session.close()  # Ensure session is closed
 
 
+# global storage: s3
+async def global_storage():
+    storage_session = await storage_rsc.access()
+    async with storage_session as s3_client:
+        yield s3_client
+
+
 ########################
 # client/repo/adapter
 ########################
@@ -69,11 +76,9 @@ _auth_service = AuthService(
     auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,
-    storage_rsc=storage_rsc,
 )
 _oauth_service = OauthService(
     auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,
-    storage_rsc=storage_rsc,
 )

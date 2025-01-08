@@ -18,8 +18,8 @@ from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
 from ....infra.client.email import EmailClient
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
-from ....infra.resource.handler.storage_resource import S3ResourceHandler
 from ....config.constant import AccountType
+from ....config.conf import XC_AUTH_BUCKET
 from ....config.exception import *
 import logging
 
@@ -33,12 +33,10 @@ class OauthService(AuthService):
         auth_repo: IAuthRepository,
         email_client: EmailClient,
         http_request: AsyncServiceApiAdapter,
-        storage_rsc: S3ResourceHandler,
     ):
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.http_request = http_request
-        self.storage_rsc = storage_rsc
         self.cls_name = self.__class__.__name__
 
     """
@@ -51,6 +49,7 @@ class OauthService(AuthService):
     async def signup_oauth_google(
         self,
         db: AsyncSession,  # write db
+        s3_client: Any,
         data: auth.NewOauthAccountDTO,
     ) -> auth.AccountOauthVO:
         # account schema
@@ -65,7 +64,17 @@ class OauthService(AuthService):
             account_entity = data.gen_account_entity(AccountType.GOOGLE)
 
             # 2. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
-            await self.register_account_to_global_storage(account_entity)
+            # await self.register_account_to_global_storage(account_entity)
+            # stoage_session = await self.storage_rsc.access()
+            # async with stoage_session as s3_client:
+            object_key = f'accounts/{account_entity.email}.json'
+            account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
+            await s3_client.put_object(
+                Bucket=XC_AUTH_BUCKET,
+                Key=object_key,
+                Body=json.dumps(account_data),
+                ContentType='application/json'
+            )
 
             # 3. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)

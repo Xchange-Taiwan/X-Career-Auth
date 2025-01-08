@@ -11,6 +11,7 @@ class S3ResourceHandler(ResourceHandler):
     def __init__(self, session: aioboto3.Session):
         super().__init__()
         self.session = session
+        self.client = self.session.client('s3')
 
     async def initial(self):
         pass
