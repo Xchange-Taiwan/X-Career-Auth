@@ -14,7 +14,6 @@ from ...domain.message.model.email_model import *
 from ...app.adapter import _auth_service, db_session
 from ..res.response import *
 from ...config.exception import *
-from ...config.constant import OauthType
 import logging
 
 logging.basicConfig(level=logging.INFO)

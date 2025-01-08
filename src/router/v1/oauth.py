@@ -14,7 +14,7 @@ from ...domain.message.model.email_model import *
 from ...app.adapter import _oauth_service, db_session
 from ..res.response import *
 from ...config.exception import *
-from ...config.constant import OauthType
+from ...config.constant import AccountType
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -33,9 +33,9 @@ router = APIRouter(
 async def signup_oauth(
     payload: auth.NewOauthAccountDTO = Body(...),
     db: AsyncSession = Depends(db_session),
-    auth_type: OauthType = Path(...)
+    auth_type: AccountType = Path(...)
 ):
-    if auth_type == OauthType.GOOGLE:
+    if auth_type == AccountType.GOOGLE:
         res = await _oauth_service.signup_oauth_google(db, payload)
     else:
         raise ServerException('Invalid oauth type')
@@ -48,9 +48,9 @@ async def signup_oauth(
 async def login_oauth(
     payload: gw.LoginOauthDTO = Body(...),
     db: AsyncSession = Depends(db_session),
-    auth_type: OauthType = Path(...)
+    auth_type: AccountType = Path(...)
 ):
-    if auth_type == OauthType.GOOGLE:
+    if auth_type == AccountType.GOOGLE:
         res = await _oauth_service.login_oauth_google(db, payload)
     else:
         raise ServerException('Invalid oauth type')

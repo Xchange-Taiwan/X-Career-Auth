@@ -77,7 +77,3 @@ class AccountType(Enum):
     XC = 'XC'
     GOOGLE = 'GOOGLE'
     LINKEDIN = 'LINKEDIN'
-
-
-class OauthType(Enum):
-    GOOGLE = 'GOOGLE'
