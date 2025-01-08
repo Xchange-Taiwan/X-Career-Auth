@@ -55,15 +55,16 @@ class OauthService(AuthService):
     ) -> auth.AccountOauthVO:
         # account schema
         account_entity: AccountEntity = None
-        object_key = f'accounts/{data.email}.json'
+        object_key = f"accounts/{data.email}.json"
         try:
             # 1. 檢查 S3 是否已經有帳戶資料，若有則拋錯
             response = await s3_client.head_object(
-                Bucket=XC_AUTH_BUCKET,
-                Key=object_key
+                Bucket=XC_AUTH_BUCKET, Key=object_key
             )
             if self.s3_has_object(response):
-                raise DuplicateUserException(msg='Email already registered in global storage')
+                raise DuplicateUserException(
+                    msg="Email already registered in global storage"
+                )
         except botocore.exceptions.ClientError as e:
             self.s3_client_error(e)
 
@@ -80,7 +81,7 @@ class OauthService(AuthService):
                 Bucket=XC_AUTH_BUCKET,
                 Key=object_key,
                 Body=json.dumps(account_data),
-                ContentType='application/json'
+                ContentType="application/json",
             )
 
             # 4. 將帳戶資料寫入 DB
