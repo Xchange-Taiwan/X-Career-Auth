@@ -14,7 +14,7 @@ class AccountEntity(BaseModel):
     refresh_token: Optional[str] = ''
     user_id: Optional[int] = None
     account_type: Optional[AccountType] = None
-    is_active: bool = True
+    is_active: Optional[bool] = True
     region: Optional[str] = ''
     created_at: Optional[int] = 0
     updated_at: Optional[int] = 0
