@@ -1,10 +1,12 @@
-from typing import Any, Union, Callable, Optional
+from typing import Any, Dict, Union, Callable, Optional
+import aioboto3.session
 from pydantic import EmailStr
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 import uuid
 import json
+import botocore
 
 from src.config.constant import AccountType
 from ..dao.i_auth_repository import IAuthRepository
@@ -121,15 +123,26 @@ class AuthService:
     ) -> (auth.AccountVO):
         # account schema
         account_entity: AccountEntity = None
+        object_key = f'accounts/{data.email}.json'
+        try:
+            # 1. 檢查 S3 是否已經有帳戶資料，若有則拋錯
+            response = await s3_client.head_object(
+                Bucket=XC_AUTH_BUCKET,
+                Key=object_key
+            )
+            if self.s3_has_object(response):
+                raise DuplicateUserException(msg='Email already registered in global storage')
+        except botocore.exceptions.ClientError as e:
+            self.s3_client_error(e)
+
         try:
             # 2. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.XC)
 
             # 3. 將帳戶資料寫入 S3 (email, region, account_type)
-            # await self.register_account_to_global_storage(account_entity)
+            # await self.register_account_to_global_storage(s3_client, account_entity)
             # stoage_session = await self.storage_rsc.access()
             # async with stoage_session as s3_client:
-            object_key = f'accounts/{account_entity.email}.json'
             account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
             await s3_client.put_object(
                 Bucket=XC_AUTH_BUCKET,
@@ -146,12 +159,24 @@ class AuthService:
             return auth.AccountVO.parse_obj(account_entity.dict())
 
         except Exception as e:
-            # TODO: rollback: delete S3 & DB
             log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to signup')
             raise_http_exception(e=e, msg=err_msg)
 
+
+    def s3_has_object(self, response: Dict):
+        return (
+            'ResponseMetadata' in response
+            and 'HTTPStatusCode' in response['ResponseMetadata']
+            and response['ResponseMetadata']['HTTPStatusCode'] == 200
+        )
+
+    def s3_client_error(self, e: botocore.exceptions.ClientError):
+        if e.response['Error']['Code'] == '404':
+            pass
+        else:
+            raise ServerException(msg='Unable to check email in global storage')
 
     """
     TODO: deprecated 

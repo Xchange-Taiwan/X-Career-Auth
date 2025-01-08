@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 import uuid
 import json
+import botocore
 
 from src.config.constant import AccountType
 from .auth_service import AuthService
@@ -54,16 +55,26 @@ class OauthService(AuthService):
     ) -> auth.AccountOauthVO:
         # account schema
         account_entity: AccountEntity = None
+        object_key = f'accounts/{data.email}.json'
         try:
+            # 1. 檢查 S3 是否已經有帳戶資料，若有則拋錯
+            response = await s3_client.head_object(
+                Bucket=XC_AUTH_BUCKET,
+                Key=object_key
+            )
+            if self.s3_has_object(response):
+                raise DuplicateUserException(msg='Email already registered in global storage')
+        except botocore.exceptions.ClientError as e:
+            self.s3_client_error(e)
 
+        try:
             # 2. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.GOOGLE)
 
             # 3. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
-            # await self.register_account_to_global_storage(account_entity)
+            # await self.register_account_to_global_storage(s3_client, account_entity)
             # stoage_session = await self.storage_rsc.access()
             # async with stoage_session as s3_client:
-            object_key = f'accounts/{account_entity.email}.json'
             account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
             await s3_client.put_object(
                 Bucket=XC_AUTH_BUCKET,
@@ -80,7 +91,6 @@ class OauthService(AuthService):
             return auth.AccountOauthVO.parse_obj(account_entity.dict())
 
         except Exception as e:
-            # TODO: rollback: delete S3 & DB
             log.error(
                 f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,

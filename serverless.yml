@@ -39,6 +39,7 @@ provider:
     Action:
       - s3:PutObject
       - s3:GetObject
+      - s3:HeadObject
       - s3:ListBucket
     Resource: 
       - arn:aws:s3:::${env:XC_AUTH_BUCKET}/*  # 允許訪問 bucket 內的所有對象
