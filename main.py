@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, \
     APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from src.infra.resource.manager import io_resource_manager
+from src.app.adapter import io_resource_manager
 from src.router.v1 import (
     auth, oauth,
 )

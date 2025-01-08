@@ -18,6 +18,7 @@ from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
 from ....infra.client.email import EmailClient
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
+from ....infra.resource.handler.storage_resource import S3ResourceHandler
 from ....config.constant import AccountType
 from ....config.exception import *
 import logging
@@ -32,10 +33,12 @@ class OauthService(AuthService):
         auth_repo: IAuthRepository,
         email_client: EmailClient,
         http_request: AsyncServiceApiAdapter,
+        storage_rsc: S3ResourceHandler,
     ):
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.http_request = http_request
+        self.storage_rsc = storage_rsc
         self.cls_name = self.__class__.__name__
 
     """
@@ -61,12 +64,13 @@ class OauthService(AuthService):
             # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.GOOGLE)
 
-            # TODO: 2. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
+            # 2. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
+            await self.register_account_to_global_storage(account_entity)
 
             # 3. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
-                raise ServerException(msg="Email already registered")
+                raise ServerException(msg="Google email already registered")
 
             return auth.AccountOauthVO.parse_obj(account_entity.dict())
             # else:

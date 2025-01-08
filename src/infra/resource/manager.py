@@ -1,5 +1,4 @@
 import asyncio
-import aioboto3
 from typing import Dict
 from .handler import *
 from ...config.conf import PROBE_CYCLE_SECS
@@ -49,10 +48,3 @@ class IOResourceManager:
     async def close(self):
         for resource in self.resources.values():
             await resource.close()
-
-
-session = aioboto3.Session()
-io_resource_manager = IOResourceManager(resources={
-    'ses': SESResourceHandler(session),
-    'sql': SQLResourceHandler(),
-})

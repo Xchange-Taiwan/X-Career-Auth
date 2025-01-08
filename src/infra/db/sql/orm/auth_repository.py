@@ -30,6 +30,9 @@ class AuthRepository(IAuthRepository):
 
             result = await db.execute(query)
             account = result.scalar_one_or_none()
+            if account is None:
+                return None
+
             if fields == ['*']:
                 return AccountEntity.from_orm(account)
             else:
@@ -50,6 +53,9 @@ class AuthRepository(IAuthRepository):
 
             result = await db.execute(query)
             account = result.scalar_one_or_none()
+            if account is None:
+                return None
+
             if fields == ['*']:
                 return AccountEntity.from_orm(account)
             else:

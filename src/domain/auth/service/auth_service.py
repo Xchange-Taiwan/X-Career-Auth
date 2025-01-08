@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 import uuid
 import json
-import aioboto3
 
 from src.config.constant import AccountType
 from ..dao.i_auth_repository import IAuthRepository
@@ -18,7 +17,9 @@ from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util import auth_util
 from ....infra.client.email import EmailClient
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
+from ....infra.resource.handler.storage_resource import S3ResourceHandler
 from ....config.constant import AccountType
+from ....config.conf import XC_AUTH_BUCKET
 from ....config.exception import *
 import logging
 
@@ -30,11 +31,13 @@ class AuthService:
     def __init__(self,
                  auth_repo: IAuthRepository,
                  email_client: EmailClient,
-                 http_request: AsyncServiceApiAdapter
+                 http_request: AsyncServiceApiAdapter,
+                 storage_rsc: S3ResourceHandler,
                  ):
         self.auth_repo = auth_repo
         self.email_client = email_client
         self.http_request = http_request
+        self.storage_rsc = storage_rsc
         self.cls_name = self.__class__.__name__
 
     async def send_code_by_email(
@@ -124,44 +127,51 @@ class AuthService:
             # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.XC)
 
-            # TODO: 2. 將帳戶資料寫入 S3 (email, region, account_type)
-            async with aioboto3.Session().client('s3') as s3_client:
-                bucket_name = 'x-career-auth'
-                object_key = f"accounts/{account_entity.email}.json"
-                account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
-                await s3_client.put_object(
-                    Bucket=bucket_name,
-                    Key=object_key,
-                    Body=json.dumps(account_data),
-                    ContentType='application/json'
-                )
+            # 2. 將帳戶資料寫入 S3 (email, region, account_type)
+            await self.register_account_to_global_storage(account_entity)
     
             # 3. 將帳戶資料寫入 DB
-            created_account_entity = await self.auth_repo.create_account(db, account_entity)
-            if created_account_entity is None:
+            account_entity = await self.auth_repo.create_account(db, account_entity)
+            if account_entity is None:
                 raise ServerException(msg='Email already registered')
 
-            return auth.AccountVO.parse_obj(created_account_entity.dict())
+            return auth.AccountVO.parse_obj(account_entity.dict())
 
         except Exception as e:
             # TODO: rollback: delete S3 & DB
             log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
-            await self.delete_account(db, account_entity)
             err_msg = getattr(e, 'msg', 'Unable to signup')
             raise_http_exception(e=e, msg=err_msg)
 
 
+    async def register_account_to_global_storage(self, account_entity: AccountEntity):
+        stoage_session = await self.storage_rsc.access()
+        async with stoage_session as s3_client:
+            object_key = f'accounts/{account_entity.email}.json'
+            account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
+            await s3_client.put_object(
+                Bucket=XC_AUTH_BUCKET,
+                Key=object_key,
+                Body=json.dumps(account_data),
+                ContentType='application/json'
+            )
+
+    """
+    TODO: deprecated
+    reaseon: 當DB有資料時，不適合操作以下的rollback
+    """
     async def delete_account(
         self, 
         db: AsyncSession,
         account_entity: AccountEntity
     ) -> (int):
         # delete S3
-        async with aioboto3.Session().client('s3') as s3_client:
+        stoage_session = await self.storage_rsc.access()
+        async with stoage_session as s3_client:
             await s3_client.delete_object(
-                Bucket='x-career-auth', 
-                Key=f"accounts/{account_entity.email}.json"
+                Bucket=XC_AUTH_BUCKET, 
+                Key=f'accounts/{account_entity.email}.json'
             )
 
         # delete DB
