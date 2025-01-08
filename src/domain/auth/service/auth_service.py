@@ -122,10 +122,10 @@ class AuthService:
         # account schema
         account_entity: AccountEntity = None
         try:
-            # 1. 產生帳戶資料, no Dict but custom BaseModel
+            # 2. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.XC)
 
-            # 2. 將帳戶資料寫入 S3 (email, region, account_type)
+            # 3. 將帳戶資料寫入 S3 (email, region, account_type)
             # await self.register_account_to_global_storage(account_entity)
             # stoage_session = await self.storage_rsc.access()
             # async with stoage_session as s3_client:
@@ -138,7 +138,7 @@ class AuthService:
                 ContentType='application/json'
             )
     
-            # 3. 將帳戶資料寫入 DB
+            # 4. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg='Email already registered')
