@@ -22,6 +22,19 @@ class AccountEntity(BaseModel):
     class Config:
         orm_mode = True
 
+
+    def register_format(self):
+        if self.account_type is None:
+            raise ValueError('Account type is required')
+
+        return {
+            'email': self.email,
+            'account_type': self.account_type.value,
+            'oauth_id': self.oauth_id,
+            'region': self.region,
+        }
+
+
     @staticmethod
     def from_orm(account: Account):
         return AccountEntity(

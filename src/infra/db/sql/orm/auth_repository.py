@@ -129,3 +129,23 @@ class AuthRepository(IAuthRepository):
             log.error(f'Error in {self.cls_name}.update_password: {e}')
             await db.rollback()
             return 0
+
+
+    async def delete_account_by_email(self, db: AsyncSession, account_entity: AccountEntity) -> (int):
+        try:
+            account = account_entity.to_orm()
+            query = select(Account).where(Account.email == account.email)
+            result = await db.execute(query)
+            account = result.scalar_one_or_none()
+            
+            # 如果找不到账户，返回0
+            if not account:
+                return 0
+                
+            await db.delete(account)
+            await db.commit()
+            return 1
+        except SQLAlchemyError as e:
+            log.error(f'Error in {self.cls_name}.delete_account: {e}')
+            await db.rollback()
+            return 0

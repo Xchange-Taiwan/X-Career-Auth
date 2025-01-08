@@ -28,3 +28,7 @@ class IAuthRepository(ABC):
     @abstractmethod
     async def check_and_update_password(self, db: AsyncSession, update_password_params: UpdatePasswordDTO, validate_function: Callable) -> (int):
         pass
+
+    @abstractmethod
+    async def delete_account_by_email(self, db: AsyncSession, account_entity: AccountEntity) -> (int):
+        pass
