@@ -14,9 +14,9 @@ from ..model import (
     gateway_auth_model as gw,
     auth_model as auth,
 )
+from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
 from ....infra.client.email import EmailClient
-from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ....config.constant import AccountType
 from ....config.exception import *

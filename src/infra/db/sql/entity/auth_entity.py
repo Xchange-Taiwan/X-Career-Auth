@@ -38,8 +38,7 @@ for OAuth AccountEntity(Google, LinkedIn, etc):
     region
 """
 
-
-class AccountEntity(Base):
+class Account(Base):
     __tablename__ = "accounts"
 
     aid = Column(BigInteger, primary_key=True, autoincrement=True)

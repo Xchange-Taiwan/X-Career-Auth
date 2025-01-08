@@ -3,8 +3,8 @@ from decimal import Decimal
 from typing import Dict, List, Any, Optional, Callable
 from pydantic import EmailStr, BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..model.auth_model import UpdatePasswordDTO
-from ....infra.db.sql.entity.auth_entity import AccountEntity
+from src.domain.auth.model.auth_model import UpdatePasswordDTO
+from src.domain.auth.model.auth_entity import AccountEntity
 
 
 class IAuthRepository(ABC):
@@ -18,7 +18,7 @@ class IAuthRepository(ABC):
         pass
 
     @abstractmethod
-    async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
+    async def create_account(self, db: AsyncSession, account_entity: AccountEntity) -> (AccountEntity):
         pass
 
     @abstractmethod
