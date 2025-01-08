@@ -61,7 +61,9 @@ class OauthService(AuthService):
             # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.GOOGLE)
 
-            # 2. 將帳戶資料寫入 DB
+            # TODO: 2. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
+
+            # 3. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg="Email already registered")
@@ -71,6 +73,7 @@ class OauthService(AuthService):
             #     raise ServerException(msg="Your google account is not valid")
 
         except Exception as e:
+            # TODO: rollback: delete S3 & DB
             log.error(
                 f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,

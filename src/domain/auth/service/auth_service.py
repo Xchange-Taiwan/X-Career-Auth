@@ -123,7 +123,9 @@ class AuthService:
             # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.XC)
 
-            # 2. 將帳戶資料寫入 DB
+            # TODO: 2. 將帳戶資料寫入 S3 (email, region, account_type)
+
+            # 3. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg='Email already registered')
@@ -131,6 +133,7 @@ class AuthService:
             return auth.AccountVO.parse_obj(account_entity.dict())
 
         except Exception as e:
+            # TODO: rollback: delete S3 & DB
             log.error(f'{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s',
                       data, None if account_entity is None else account_entity.dict(), e.__str__())
             err_msg = getattr(e, 'msg', 'Unable to signup')
