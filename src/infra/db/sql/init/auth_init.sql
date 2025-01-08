@@ -29,3 +29,7 @@ CREATE TABLE IF NOT EXISTS accounts (
     created_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
     updated_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
 );
+
+-- 创建唯一索引，仅当 oauth_id 不为空时，避免空字符串造成索引偏斜 (避免對空字串或 NULL 建立索引)
+CREATE UNIQUE INDEX uidx_accounts_oauth_id_email ON accounts (oauth_id, email) WHERE oauth_id <> '' and oauth_id <> NULL;
+CREATE UNIQUE INDEX uidx_accounts_email ON accounts (email);

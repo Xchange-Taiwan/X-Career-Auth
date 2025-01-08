@@ -10,7 +10,7 @@ class AccountEntity(BaseModel):
     email2: Optional[EmailStr] = None
     pass_hash: Optional[str] = ''
     pass_salt: Optional[str] = ''
-    oauth_id: Optional[str] = ''
+    oauth_id: Optional[str] = '' # 避免對空字串或 NULL 建立索引
     refresh_token: Optional[str] = ''
     user_id: Optional[int] = None
     account_type: Optional[AccountType] = None

@@ -40,6 +40,10 @@ class AuthService:
         self.http_request = http_request
         self.cls_name = self.__class__.__name__
 
+    """
+    TODO: deprecated
+    reason: 之後以 S3 為主 驗證email是否存在
+    """
     async def send_code_by_email(
         self,
         db: AsyncSession,  # read db
@@ -78,6 +82,11 @@ class AuthService:
             err_msg = getattr(e, "msg", "Unable to send code by email")
             raise_http_exception(e=e, msg=err_msg)
 
+
+    """
+    TODO: deprecated
+    reason: 之後以 S3 為主 驗證email是否存在
+    """
     async def send_link_by_email(
         self,
         db: AsyncSession,  # read db
@@ -117,8 +126,69 @@ class AuthService:
             )
             err_msg = getattr(e, "msg", "Unable to send link by email")
             raise_http_exception(e=e, msg=err_msg)
-
         return {"token": token}
+
+
+    async def signup_email(
+        self,
+        db: AsyncSession,  # read db
+        s3_client: Any,
+        data: SendEmailDTO,
+    ):
+        response = None
+        try:
+            # 檢查 S3 是否已經有帳戶資料，若有則拋錯
+            object_key = f"accounts/{data.email}.json"
+            response = await s3_client.head_object(
+                Bucket=XC_AUTH_BUCKET, Key=object_key
+            )
+            if self.s3_has_object(response):
+                log.error(
+                    f"{self.cls_name}.signup_email [s3 error] data: %s, response: %s",
+                    data,
+                    response,
+                )
+                raise DuplicateUserException(
+                    msg="Email already registered in global storage"
+                )
+        except DuplicateUserException as e:
+            raise e
+        except Exception as e:
+            log.error(
+                f"{self.cls_name}.signup_email [s3 error] data: %s, response: %s, err: %s",
+                data,
+                response,
+                e.__str__(),
+            )
+            self.s3_client_error(e)
+
+        # email sending
+        token: str = str(uuid.uuid4())
+        await self.email_client.send_signup_confirm_email(
+            email=data.email, token=token
+        )
+        return {"token": token}
+
+
+    def s3_has_object(self, response: Dict):
+        return (
+            "ResponseMetadata" in response
+            and "HTTPStatusCode" in response["ResponseMetadata"]
+            and response["ResponseMetadata"]["HTTPStatusCode"] == 200
+        )
+
+    def s3_client_error(self, e: Any):
+        if (
+            hasattr(e, "response")
+            and "Error" in e.response
+            and "Code" in e.response["Error"]
+        ):
+            err_status_code = e.response["Error"]["Code"]
+            if err_status_code in ('404'):
+                pass
+        else:
+            raise ServerException(msg="Unable to check email in global storage")
+
 
     """
     註冊流程
@@ -134,28 +204,17 @@ class AuthService:
     ) -> auth.AccountVO:
         # account schema
         account_entity: AccountEntity = None
-        object_key = f"accounts/{data.email}.json"
-        try:
-            # 1. 檢查 S3 是否已經有帳戶資料，若有則拋錯
-            response = await s3_client.head_object(
-                Bucket=XC_AUTH_BUCKET, Key=object_key
-            )
-            if self.s3_has_object(response):
-                raise DuplicateUserException(
-                    msg="Email already registered in global storage"
-                )
-        except botocore.exceptions.ClientError as e:
-            self.s3_client_error(e)
 
         try:
-            # 2. 產生帳戶資料, no Dict but custom BaseModel
+            # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.XC)
 
-            # 3. 將帳戶資料寫入 S3 (email, region, account_type)
+            # 2. 將帳戶資料寫入 S3 (email, region, account_type)
             # await self.register_account_to_global_storage(s3_client, account_entity)
             # stoage_session = await self.storage_rsc.access()
             # async with stoage_session as s3_client:
             account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
+            object_key = f"accounts/{data.email}.json"
             await s3_client.put_object(
                 Bucket=XC_AUTH_BUCKET,
                 Key=object_key,
@@ -163,7 +222,7 @@ class AuthService:
                 ContentType="application/json",
             )
 
-            # 4. 將帳戶資料寫入 DB
+            # 3. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg="Email already registered")
@@ -180,18 +239,6 @@ class AuthService:
             err_msg = getattr(e, "msg", "Unable to signup")
             raise_http_exception(e=e, msg=err_msg)
 
-    def s3_has_object(self, response: Dict):
-        return (
-            "ResponseMetadata" in response
-            and "HTTPStatusCode" in response["ResponseMetadata"]
-            and response["ResponseMetadata"]["HTTPStatusCode"] == 200
-        )
-
-    def s3_client_error(self, e: botocore.exceptions.ClientError):
-        if e.response["Error"]["Code"] == "404":
-            pass
-        else:
-            raise ServerException(msg="Unable to check email in global storage")
 
     """
     TODO: deprecated 

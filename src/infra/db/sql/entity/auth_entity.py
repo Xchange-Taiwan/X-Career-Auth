@@ -46,7 +46,7 @@ class Account(Base):
     email2 = Column(String(255))
     pass_hash = Column(String(60))
     pass_salt = Column(String(60))
-    oauth_id = Column(String(255))
+    oauth_id = Column(String(255))  # 避免對空字串或 NULL 建立索引
     refresh_token = Column(String(255))
     user_id = Column(BigInteger, unique=True)
     account_type = Column(
