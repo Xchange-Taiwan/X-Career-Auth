@@ -1,18 +1,26 @@
+import aioboto3
 from sqlalchemy.exc import SQLAlchemyError
 from ..infra.resource.handler import *
-from ..infra.resource.manager import io_resource_manager
+from ..infra.resource.manager import IOResourceManager
 from ..infra.db.sql.orm.auth_repository import AuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
-
+from ..domain.auth.service.oauth_service import OauthService
 ###############################################
 # session/resource/connection/connect pool
 ###############################################
 
-email_rec = io_resource_manager.get('ses')
-sql_rsc = io_resource_manager.get('sql')
+session = aioboto3.Session()
+io_resource_manager = IOResourceManager(resources={
+    'sql': SQLResourceHandler(),
+    'ses': SESResourceHandler(session),
+    's3': S3ResourceHandler(session),
+})
 
+sql_rsc = io_resource_manager.get('sql')
+email_rec = io_resource_manager.get('ses')
+storage_rsc = io_resource_manager.get('s3')
 
 ################################################################
 # connection manager for db, cache, message queue ... etc ?
@@ -44,6 +52,13 @@ async def db_auto_session():
             await session.close()  # Ensure session is closed
 
 
+# global storage: s3
+async def global_storage():
+    storage_session = await storage_rsc.access()
+    async with storage_session as s3_client:
+        yield s3_client
+
+
 ########################
 # client/repo/adapter
 ########################
@@ -58,6 +73,11 @@ auth_repo = AuthRepository()
 ##############################
 
 _auth_service = AuthService(
+    auth_repo=auth_repo,
+    email_client=email_client,
+    http_request=http_request,
+)
+_oauth_service = OauthService(
     auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,

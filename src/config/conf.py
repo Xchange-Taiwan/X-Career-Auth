@@ -7,11 +7,15 @@ LOCAL_REGION = os.getenv('AWS_REGION', 'ap-northeast-1')
 # probe cycle secs
 PROBE_CYCLE_SECS = int(os.getenv('PROBE_CYCLE_SECS', 3))
 
+# S3 bucket
+XC_AUTH_BUCKET = os.getenv('XC_AUTH_BUCKET', 'x-career-auth')
+
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
 DB_URL = os.getenv(
-    'DB_URL', 'postgresql+asyncpg://kao:password@localhost:5432/postgres')
+    'DB_URL', 'postgresql+asyncpg://kao:password@localhost:5432/postgres'
+)
 POOL_PRE_PING = bool(int(os.getenv('POOL_PRE_PING', '1')))  # 檢查連線狀態
 POOL_RECYCLE = int(os.getenv('POOL_RECYCLE', 300))  # 定期重置連線
 POOL_SIZE = int(os.getenv('POOL_SIZE', 10))         # 連線池大小

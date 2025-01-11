@@ -1,8 +1,8 @@
 import json
 from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, EmailStr, validator, Field
+from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
-from ....infra.db.sql.entity.auth_entity import AccountEntity
 from ....config.constant import AccountType
 from ....config.exception import ClientException
 import logging
@@ -49,7 +49,7 @@ class NewOauthAccountDTO(BaseModel):
     region: str
     email: EmailStr
     oauth_id: str
-    access_token: str
+    access_token: Optional[str] = None
 
     # TODO: implement, no Dict
     def gen_account_entity(self, account_type: AccountType) -> (AccountEntity):
@@ -80,7 +80,7 @@ class UpdatePasswordDTO(BaseModel):
 class AccountVO(BaseModel):
     aid: int
     email: EmailStr
-    account_type: AccountType
+    account_type: AccountType = Field(default=AccountType.XC)
     region: str
     user_id: int
 
@@ -89,5 +89,12 @@ class AccountVO(BaseModel):
 
 
 class AccountOauthVO(AccountVO):
+    aid: int
+    email: EmailStr
     oauth_id: str
     account_type: AccountType = Field(default=AccountType.GOOGLE)
+    region: str
+    user_id: int
+
+    class Config:
+        use_enum_values = True

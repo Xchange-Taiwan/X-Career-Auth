@@ -43,7 +43,7 @@ class SQLResourceHandler(ResourceHandler):
                     await self.engine.dispose()
 
                 self.engine = create_async_engine(
-                    'postgresql+asyncpg://kao:password@localhost:5432/postgres',
+                    DB_URL,
                     connect_args=connect_args,
                     pool_pre_ping=POOL_PRE_PING,
                     pool_size=POOL_SIZE,
