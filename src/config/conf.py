@@ -8,6 +8,10 @@ LOCAL_REGION = os.getenv('AWS_REGION', 'ap-northeast-1')
 PROBE_CYCLE_SECS = int(os.getenv('PROBE_CYCLE_SECS', 3))
 
 # database conf
+# dynamodb
+DDB_TABLE_ACCOUNTS = os.getenv('DYNAMODB_TABLE_ACCOUNTS', 'dev_x_career_auth_accounts')
+
+# postgres
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
 DB_URL = os.getenv(

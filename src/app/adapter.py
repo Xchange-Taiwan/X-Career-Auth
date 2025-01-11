@@ -14,15 +14,27 @@ from ..domain.auth.service.oauth_service import OauthService
 session = aioboto3.Session()
 io_resource_manager = IOResourceManager(resources={
     'sql': SQLResourceHandler(),
+    'dynamodb': NoSQLResourceHandler(session),
     'ses': SESResourceHandler(session),
 })
 
 sql_rsc = io_resource_manager.get('sql')
+dynamodb_rsc = io_resource_manager.get('dynamodb')
 email_rec = io_resource_manager.get('ses')
 
 ################################################################
 # connection manager for db, cache, message queue ... etc ?
 ################################################################
+
+# dynamodb session
+async def ddb_session():
+    dynamodb_session = await dynamodb_rsc.access()
+    async with dynamodb_session() as dynamodb_resource:
+        try:
+            yield dynamodb_resource
+        except Exception as e:
+            raise
+
 
 # session with "manual" commit/rollback
 async def db_session():

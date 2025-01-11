@@ -90,14 +90,14 @@ class OauthService(AuthService):
         account_entity: AccountEntity = None
         try:
             # 1. 取得帳戶資料
-            account_entity = await self.auth_repo.find_account_by_oauth_id(
-                db=db, oauth_id=data.oauth_id
+            account_entity = await self.auth_repo.find_account_by_email(
+                db=db, email=data.email
             )
             if account_entity is None:
                 raise NotFoundException(msg="Google account not found")
 
             # 2. 驗證登入資訊
-            if data.email == account_entity.email:
+            if data.oauth_id == account_entity.oauth_id:
                 return auth.AccountOauthVO.parse_obj(account_entity.dict())
             else:
                 raise ServerException(msg="Your google account is not valid")

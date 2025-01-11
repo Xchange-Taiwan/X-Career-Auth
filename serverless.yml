@@ -35,6 +35,15 @@ provider:
     - ses:SendEmail
     # - ses:GetSendQuota
     Resource: "*"
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - dynamodb:PutItem
+    - dynamodb:GetItem
+    - dynamodb:UpdateItem
+    - dynamodb:DeleteItem
+    - dynamodb:Query
+    Resource: arn:aws:dynamodb:${env:THE_REGION}:*:table/${env:DYNAMODB_TABLE_ACCOUNTS}
 
 
 # you can define service wide environment variables here
