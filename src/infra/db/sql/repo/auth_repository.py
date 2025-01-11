@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
-from ..entity.auth_entity import Account
+from ..orm.auth_orm import Account
 from .....domain.auth.dao.i_auth_repository import IAuthRepository
 from .....domain.auth.model.auth_model import UpdatePasswordDTO
 from .....domain.auth.model.auth_entity import AccountEntity
