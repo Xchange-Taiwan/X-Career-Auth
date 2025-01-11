@@ -7,9 +7,6 @@ LOCAL_REGION = os.getenv('AWS_REGION', 'ap-northeast-1')
 # probe cycle secs
 PROBE_CYCLE_SECS = int(os.getenv('PROBE_CYCLE_SECS', 3))
 
-# S3 bucket
-XC_AUTH_BUCKET = os.getenv('XC_AUTH_BUCKET', 'x-career-auth')
-
 # database conf
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))

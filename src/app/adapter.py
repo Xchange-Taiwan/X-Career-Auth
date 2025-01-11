@@ -2,7 +2,7 @@ import aioboto3
 from sqlalchemy.exc import SQLAlchemyError
 from ..infra.resource.handler import *
 from ..infra.resource.manager import IOResourceManager
-from ..infra.db.sql.orm.auth_repository import AuthRepository
+from ..infra.db.sql.repo.auth_repository import AuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
@@ -15,12 +15,10 @@ session = aioboto3.Session()
 io_resource_manager = IOResourceManager(resources={
     'sql': SQLResourceHandler(),
     'ses': SESResourceHandler(session),
-    's3': S3ResourceHandler(session),
 })
 
 sql_rsc = io_resource_manager.get('sql')
 email_rec = io_resource_manager.get('ses')
-storage_rsc = io_resource_manager.get('s3')
 
 ################################################################
 # connection manager for db, cache, message queue ... etc ?
@@ -50,13 +48,6 @@ async def db_auto_session():
             raise
         finally:
             await session.close()  # Ensure session is closed
-
-
-# global storage: s3
-async def global_storage():
-    storage_session = await storage_rsc.access()
-    async with storage_session as s3_client:
-        yield s3_client
 
 
 ########################

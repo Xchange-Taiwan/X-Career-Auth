@@ -18,7 +18,6 @@ done
 aws lambda update-function-configuration --function-name x-career-auth-dev-app --environment --profile $AWS_PROFILE "Variables={
 SITE_TITLE=X-Career,
 PROBE_CYCLE_SECS=3,
-XC_AUTH_BUCKET=x-career-auth,
 BATCH_LIMIT=20,
 DB_URL=postgresql+asyncpg://postgres:postgres@x-career-db-test.cu7knbzuvltn.ap-northeast-1.rds.amazonaws.com:5432/postgres,
 POOL_PRE_PING=1,
