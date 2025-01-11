@@ -92,8 +92,8 @@ class SQLResourceHandler(ResourceHandler):
         # 在同一次 request 中，使用同一個 session
         return self.session
 
-
     # Regular activation to maintain connections and connection pools
+
     async def probe(self):
         try:
             async with self.session() as session:

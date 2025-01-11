@@ -11,7 +11,11 @@ from ...domain.auth.model import (
     auth_model as auth,
 )
 from ...domain.message.model.email_model import *
-from ...app.adapter import _auth_service, db_session
+from ...app.adapter import (
+    _auth_service,
+    db_session,
+    global_storage,
+)
 from ..res.response import *
 from ...config.exception import *
 import logging
@@ -40,8 +44,11 @@ async def send_conform_code_by_email(
 async def send_signup_confirm_email(
     payload: SendEmailDTO = Body(...),
     db: AsyncSession = Depends(db_session),
+    s3_client: Any = Depends(global_storage),
 ):
-    res = await _auth_service.send_link_by_email(db=db, data=payload)
+    res = await _auth_service.signup_email(
+        db=db, s3_client=s3_client, data=payload
+    )
     return post_success(data=res)
 
 
@@ -51,8 +58,11 @@ async def send_signup_confirm_email(
 async def signup(
     payload: auth.NewAccountDTO = Body(...),
     db: AsyncSession = Depends(db_session),
+    s3_client: Any = Depends(global_storage),
 ):
-    res = await _auth_service.signup(db, payload)
+    res = await _auth_service.signup(
+        db, s3_client, payload
+    )
     return post_success(data=res.dict())
 
 

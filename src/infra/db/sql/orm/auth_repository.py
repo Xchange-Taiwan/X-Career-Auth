@@ -4,9 +4,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
-from ..entity.auth_entity import AccountEntity
+from ..entity.auth_entity import Account
 from .....domain.auth.dao.i_auth_repository import IAuthRepository
 from .....domain.auth.model.auth_model import UpdatePasswordDTO
+from .....domain.auth.model.auth_entity import AccountEntity
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -16,42 +17,72 @@ log = logging.getLogger(__name__)
 class AuthRepository(IAuthRepository):
 
     def __init__(self):
-        self.__cls_name = self.__class__.__name__
+        self.cls_name = self.__class__.__name__
 
     async def find_account_by_email(self, db: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
         try:
             if fields == ['*']:
-                query = select(AccountEntity).where(
-                    AccountEntity.email == email)
+                query = select(Account).where(
+                    Account.email == email)
             else:
-                query = select(*[getattr(AccountEntity, field)
-                                 for field in fields]).where(AccountEntity.email == email)
+                query = select(*[getattr(Account, field)
+                                 for field in fields]).where(Account.email == email)
 
             result = await db.execute(query)
             account = result.scalar_one_or_none()
-            return account
+            if account is None:
+                return None
+
+            if fields == ['*']:
+                return AccountEntity.from_orm(account)
+            else:
+                return account
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_email: %s',
-                      self.__cls_name, e)
+                      self.cls_name, e)
             return None
 
-    async def create_account(self, db: AsyncSession, account: AccountEntity) -> (AccountEntity):
+    async def find_account_by_oauth_id(self, db: AsyncSession, oauth_id: str, fields: List = ['*']) -> (Optional[AccountEntity]):
+        try:
+            if fields == ['*']:
+                query = select(Account).where(
+                    Account.oauth_id == oauth_id)
+            else:
+                query = select(*[getattr(Account, field)
+                                 for field in fields]).where(Account.oauth_id == oauth_id)
+
+            result = await db.execute(query)
+            account = result.scalar_one_or_none()
+            if account is None:
+                return None
+
+            if fields == ['*']:
+                return AccountEntity.from_orm(account)
+            else:
+                return account
+        except SQLAlchemyError as e:
+            log.error(f'Error in %s.find_account_by_oauth_id: %s',
+                      self.cls_name, e)
+            return None
+
+    async def create_account(self, db: AsyncSession, account_entity: AccountEntity) -> (AccountEntity):
         try:
             # await db.execute(text('BEGIN'))
+            account = account_entity.to_orm()
             db.add(account)
             await db.commit()
             await db.refresh(account)
-            return account
+            return AccountEntity.from_orm(account)
         except SQLAlchemyError as e:
             log.error(f'Error in %s.create_account: %s',
-                      self.__cls_name, e)
+                      self.cls_name, e)
             await db.rollback()
             return None
 
     async def update_password(self, db: AsyncSession, update_password_params: UpdatePasswordDTO) -> (int):
         try:
-            query = select(AccountEntity).where(
-                AccountEntity.email == update_password_params.email)
+            query = select(Account).where(
+                Account.email == update_password_params.email)
 
             result = await db.execute(query)
             account = result.scalar_one_or_none()
@@ -67,7 +98,7 @@ class AuthRepository(IAuthRepository):
             await db.commit()
             return 1
         except SQLAlchemyError as e:
-            log.error(f'Error in {self.__cls_name}.update_password: {e}')
+            log.error(f'Error in {self.cls_name}.update_password: {e}')
             await db.rollback()
             return 0
 
@@ -76,8 +107,8 @@ class AuthRepository(IAuthRepository):
                                         update_password_params: UpdatePasswordDTO,
                                         validate_function: Callable) -> (int):
         try:
-            query = select(AccountEntity).where(
-                AccountEntity.email == update_password_params.email)
+            query = select(Account).where(
+                Account.email == update_password_params.email)
 
             result = await db.execute(query)
             account = result.scalar_one_or_none()
@@ -101,6 +132,26 @@ class AuthRepository(IAuthRepository):
             await db.commit()
             return 1
         except SQLAlchemyError as e:
-            log.error(f'Error in {self.__cls_name}.update_password: {e}')
+            log.error(f'Error in {self.cls_name}.update_password: {e}')
+            await db.rollback()
+            return 0
+
+
+    async def delete_account_by_email(self, db: AsyncSession, account_entity: AccountEntity) -> (int):
+        try:
+            account = account_entity.to_orm()
+            query = select(Account).where(Account.email == account.email)
+            result = await db.execute(query)
+            account = result.scalar_one_or_none()
+            
+            # 如果找不到账户，返回0
+            if not account:
+                return 0
+                
+            await db.delete(account)
+            await db.commit()
+            return 1
+        except SQLAlchemyError as e:
+            log.error(f'Error in {self.cls_name}.delete_account: {e}')
             await db.rollback()
             return 0

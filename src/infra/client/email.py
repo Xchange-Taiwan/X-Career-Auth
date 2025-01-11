@@ -19,20 +19,21 @@ class EmailClient:
     async def send_content(self, recipient: EmailStr, subject: str, body: str) -> None:
         log.info(f'send email: {recipient}, subject: {subject}, body: {body}')
         try:
-            email_client = await self.ses.access()
-            response = await email_client.send_email(
-                Source=EMAIL_SENDER,
-                Destination={
-                    'ToAddresses': [recipient],
-                },
-                Message={
-                    'Subject': {'Data': f'{subject}'},
-                    'Body': {
-                        'Text': {'Data': f'{body}'},
+            email_rsc = await self.ses.access()
+            async with email_rsc as email_client:
+                response = await email_client.send_email(
+                    Source=EMAIL_SENDER,
+                    Destination={
+                        'ToAddresses': [recipient],
                     },
-                }
-            )
-            log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
+                    Message={
+                        'Subject': {'Data': f'{subject}'},
+                        'Body': {
+                            'Text': {'Data': f'{body}'},
+                        },
+                    }
+                )
+                log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
 
         except ClientError as e:
             log.error(f'SES ClientError sending email: {e}')
@@ -84,29 +85,30 @@ class EmailClient:
                 </body>
                 </html>
             '''
-            email_client = await self.ses.access()
-            response = await email_client.send_email(
-                Source=EMAIL_SENDER,
-                Destination={
-                    'ToAddresses': [email],
-                },
-                Message={
-                    'Subject': {'Data': f'{SITE_TITLE} - Verification Code: {confirm_code}'},
-                    'Body': {
-                        'Text': {'Data': f'Your Code is: {confirm_code}'},
-                        'Html': {'Data': html_template},
+            email_rsc = await self.ses.access()
+            async with email_rsc as email_client:
+                response = await email_client.send_email(
+                    Source=EMAIL_SENDER,
+                    Destination={
+                        'ToAddresses': [email],
                     },
-                }
-            )
-            # response = self.ses.send_templated_email(
-            #     Source=EMAIL_SENDER,
-            #     Destination={
-            #         'ToAddresses': [email],
-            #     },
-            #     Template=EMAIL_VERIFY_CODE_TEMPLATE,
-            #     TemplateData=f'{"verification_code":"{confirm_code}"}'
-            # )
-            log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
+                    Message={
+                        'Subject': {'Data': f'{SITE_TITLE} - Verification Code: {confirm_code}'},
+                        'Body': {
+                            'Text': {'Data': f'Your Code is: {confirm_code}'},
+                            'Html': {'Data': html_template},
+                        },
+                    }
+                )
+                # response = self.ses.send_templated_email(
+                #     Source=EMAIL_SENDER,
+                #     Destination={
+                #         'ToAddresses': [email],
+                #     },
+                #     Template=EMAIL_VERIFY_CODE_TEMPLATE,
+                #     TemplateData=f'{"verification_code":"{confirm_code}"}'
+                # )
+                log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
 
         except ClientError as e:
             log.error(f'Error sending email: {e}')
@@ -143,29 +145,31 @@ class EmailClient:
                 </body>
                 </html>
             '''
-            email_client = await self.ses.access()
-            response = await email_client.send_email(
-                Source=EMAIL_SENDER,
-                Destination={
-                    'ToAddresses': [email],
-                },
-                Message={
-                    'Subject': {'Data': f'{SITE_TITLE} - Reset Password'},
-                    'Body': {
-                        'Text': {'Data': f'Reset Your Password'},
-                        'Html': {'Data': html_template},
+            
+            email_rsc = await self.ses.access()
+            async with email_rsc as email_client:
+                response = await email_client.send_email(
+                    Source=EMAIL_SENDER,
+                    Destination={
+                        'ToAddresses': [email],
                     },
-                }
-            )
-            # response = self.ses.send_templated_email(
-            #     Source=EMAIL_SENDER,
-            #     Destination={
-            #         'ToAddresses': [email],
-            #     },
-            #     Template=EMAIL_RESET_PASSWORD_TEMPLATE,
-            #     TemplateData=f'{"reset_password_url":"{FRONTEND_RESET_PASSWORD_URL}","token":"{token}"}'
-            # )
-            log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
+                    Message={
+                        'Subject': {'Data': f'{SITE_TITLE} - Reset Password'},
+                        'Body': {
+                            'Text': {'Data': f'Reset Your Password'},
+                            'Html': {'Data': html_template},
+                        },
+                    }
+                )
+                # response = self.ses.send_templated_email(
+                #     Source=EMAIL_SENDER,
+                #     Destination={
+                #         'ToAddresses': [email],
+                #     },
+                #     Template=EMAIL_RESET_PASSWORD_TEMPLATE,
+                #     TemplateData=f'{"reset_password_url":"{FRONTEND_RESET_PASSWORD_URL}","token":"{token}"}'
+                # )
+                log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
 
         except ClientError as e:
             log.error(f'Error sending email: {e}') 
@@ -202,21 +206,22 @@ class EmailClient:
                 </body>
                 </html>
             '''
-            email_client = await self.ses.access()
-            response = await email_client.send_email(
-                Source=EMAIL_SENDER,
-                Destination={
-                    'ToAddresses': [email],
-                },
-                Message={
-                    'Subject': {'Data': f'{SITE_TITLE} - Confirm Your Registration'},
-                    'Body': {
-                        'Text': {'Data': 'Confirm Your Email'},
-                        'Html': {'Data': html_template},
+            email_rsc = await self.ses.access()
+            async with email_rsc as email_client:
+                response = await email_client.send_email(
+                    Source=EMAIL_SENDER,
+                    Destination={
+                        'ToAddresses': [email],
                     },
-                }
-            )
-            log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
+                    Message={
+                        'Subject': {'Data': f'{SITE_TITLE} - Confirm Your Registration'},
+                        'Body': {
+                            'Text': {'Data': 'Confirm Your Email'},
+                            'Html': {'Data': html_template},
+                        },
+                    }
+                )
+                log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
 
         except ClientError as e:
             log.error(f'Error sending email: {e}') 
