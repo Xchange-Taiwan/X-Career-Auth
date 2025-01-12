@@ -14,7 +14,6 @@ from ...domain.message.model.email_model import *
 from ...app.adapter import (
     _oauth_service,
     db_session,
-    global_storage,
 )
 from ..res.response import *
 from ...config.exception import *
@@ -38,11 +37,10 @@ async def signup_oauth(
     auth_type: AccountType = Path(...),
     payload: auth.NewOauthAccountDTO = Body(...),
     db: AsyncSession = Depends(db_session),
-    s3_client: Any = Depends(global_storage),
 ):
     if auth_type == AccountType.GOOGLE:
         res = await _oauth_service.signup_oauth_google(
-            db, s3_client, payload
+            db, payload
         )
     else:
         raise ServerException('Invalid oauth type')
