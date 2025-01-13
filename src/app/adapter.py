@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..infra.resource.handler import *
 from ..infra.resource.manager import IOResourceManager
 from ..infra.db.sql.repo.auth_repository import AuthRepository
+from ..infra.db.nosql.repo.dynamodb_auth_repository import DynamoDBAuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
@@ -13,12 +14,12 @@ from ..domain.auth.service.oauth_service import OauthService
 
 session = aioboto3.Session()
 io_resource_manager = IOResourceManager(resources={
-    'sql': SQLResourceHandler(),
+    # 'sql': SQLResourceHandler(),
     'dynamodb': NoSQLResourceHandler(session),
     'ses': SESResourceHandler(session),
 })
 
-sql_rsc = io_resource_manager.get('sql')
+sql_rsc = None # io_resource_manager.get('sql')
 dynamodb_rsc = io_resource_manager.get('dynamodb')
 email_rec = io_resource_manager.get('ses')
 
@@ -28,10 +29,10 @@ email_rec = io_resource_manager.get('ses')
 
 # dynamodb session
 async def ddb_session():
-    dynamodb_session = await dynamodb_rsc.access()
-    async with dynamodb_session() as dynamodb_resource:
+    dynamodb_resource = await dynamodb_rsc.access()
+    async with dynamodb_resource as ddb_resource:
         try:
-            yield dynamodb_resource
+            yield ddb_resource
         except Exception as e:
             raise
 
@@ -69,6 +70,7 @@ async def db_auto_session():
 email_client = EmailClient(ses=email_rec)
 http_request = AsyncServiceApiAdapter()
 auth_repo = AuthRepository()
+ddb_auth_repo = DynamoDBAuthRepository()
 
 
 ##############################
@@ -76,12 +78,12 @@ auth_repo = AuthRepository()
 ##############################
 
 _auth_service = AuthService(
-    auth_repo=auth_repo,
+    auth_repo=ddb_auth_repo,
     email_client=email_client,
     http_request=http_request,
 )
 _oauth_service = OauthService(
-    auth_repo=auth_repo,
+    auth_repo=ddb_auth_repo,
     email_client=email_client,
     http_request=http_request,
 )

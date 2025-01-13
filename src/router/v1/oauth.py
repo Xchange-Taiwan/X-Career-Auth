@@ -13,7 +13,7 @@ from ...domain.auth.model import (
 from ...domain.message.model.email_model import *
 from ...app.adapter import (
     _oauth_service,
-    db_session,
+    ddb_session,
 )
 from ..res.response import *
 from ...config.exception import *
@@ -36,7 +36,7 @@ router = APIRouter(
 async def signup_oauth(
     auth_type: AccountType = Path(...),
     payload: auth.NewOauthAccountDTO = Body(...),
-    db: AsyncSession = Depends(db_session),
+    db: AsyncSession = Depends(ddb_session),
 ):
     if auth_type == AccountType.GOOGLE:
         res = await _oauth_service.signup_oauth_google(
@@ -52,7 +52,7 @@ async def signup_oauth(
              status_code=status.HTTP_201_CREATED)
 async def login_oauth(
     payload: gw.LoginOauthDTO = Body(...),
-    db: AsyncSession = Depends(db_session),
+    db: AsyncSession = Depends(ddb_session),
     auth_type: AccountType = Path(...)
 ):
     if auth_type == AccountType.GOOGLE:

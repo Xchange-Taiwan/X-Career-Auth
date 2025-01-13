@@ -7,6 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+
 class NoSQLResourceHandler(ResourceHandler):
     def __init__(self, session: aioboto3.Session):
         super().__init__()
