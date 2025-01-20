@@ -179,6 +179,9 @@ class AuthService:
             )
             if account_entity is None:
                 raise NotFoundException(msg="Account not found")
+            
+            if account_entity.account_type != AccountType.XC:
+                raise UnauthorizedException(msg=f"You registered as a {account_entity.account_type.value} account")
 
             # 2. 驗證登入資訊
             pass_hash = account_entity.pass_hash

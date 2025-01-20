@@ -96,6 +96,9 @@ class OauthService(AuthService):
             if account_entity is None:
                 raise NotFoundException(msg="Google account not found")
 
+            if account_entity.account_type != AccountType.GOOGLE:
+                raise UnauthorizedException(msg="Your google account is not valid")
+
             # 2. 驗證登入資訊
             if data.oauth_id == account_entity.oauth_id:
                 return auth.AccountOauthVO.parse_obj(account_entity.dict())
