@@ -2,11 +2,11 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from src.config.constant import AccountType
 from src.infra.util.time_util import current_seconds
-from src.infra.db.sql.entity.auth_entity import Account
+from src.infra.db.sql.orm.auth_orm import Account
 
 class AccountEntity(BaseModel):
+    email: Optional[EmailStr] = None # DynamodDB Partition Key
     aid: Optional[int] = None
-    email: Optional[EmailStr] = None
     email2: Optional[EmailStr] = None
     pass_hash: Optional[str] = ''
     pass_salt: Optional[str] = ''

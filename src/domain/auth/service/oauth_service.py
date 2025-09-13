@@ -20,7 +20,6 @@ from ....infra.util.auth_util import *
 from ....infra.client.email import EmailClient
 from ....infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ....config.constant import AccountType
-from ....config.conf import XC_AUTH_BUCKET
 from ....config.exception import *
 import logging
 
@@ -50,7 +49,6 @@ class OauthService(AuthService):
     async def signup_oauth_google(
         self,
         db: AsyncSession,  # write db
-        s3_client: Any,
         data: auth.NewOauthAccountDTO,
     ) -> auth.AccountOauthVO:
         # account schema
@@ -60,20 +58,7 @@ class OauthService(AuthService):
             # 1. 產生帳戶資料, no Dict but custom BaseModel
             account_entity = data.gen_account_entity(AccountType.GOOGLE)
 
-            # 2. 將帳戶資料寫入 S3 (email, region, account_type, oauth_id)
-            # await self.register_account_to_global_storage(s3_client, account_entity)
-            # stoage_session = await self.storage_rsc.access()
-            # async with stoage_session as s3_client:
-            account_data = account_entity.register_format()  # 將帳戶資料轉換為字典格式
-            object_key = f"accounts/{data.email}.json"
-            await s3_client.put_object(
-                Bucket=XC_AUTH_BUCKET,
-                Key=object_key,
-                Body=json.dumps(account_data),
-                ContentType="application/json",
-            )
-
-            # 3. 將帳戶資料寫入 DB
+            # 2. 將帳戶資料寫入 DB
             account_entity = await self.auth_repo.create_account(db, account_entity)
             if account_entity is None:
                 raise ServerException(msg="Google email already registered")
@@ -105,14 +90,17 @@ class OauthService(AuthService):
         account_entity: AccountEntity = None
         try:
             # 1. 取得帳戶資料
-            account_entity = await self.auth_repo.find_account_by_oauth_id(
-                db=db, oauth_id=data.oauth_id
+            account_entity = await self.auth_repo.find_account_by_email(
+                db=db, email=data.email
             )
             if account_entity is None:
                 raise NotFoundException(msg="Google account not found")
 
+            if account_entity.account_type != AccountType.GOOGLE:
+                raise UnauthorizedException(msg="Your google account is not valid")
+
             # 2. 驗證登入資訊
-            if data.email == account_entity.email:
+            if data.oauth_id == account_entity.oauth_id:
                 return auth.AccountOauthVO.parse_obj(account_entity.dict())
             else:
                 raise ServerException(msg="Your google account is not valid")

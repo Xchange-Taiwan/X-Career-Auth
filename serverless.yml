@@ -37,13 +37,13 @@ provider:
     Resource: "*"
   - Effect: Allow
     Action:
-      - s3:PutObject
-      - s3:GetObject
-      - s3:HeadObject
-      - s3:ListBucket
-    Resource: 
-      - arn:aws:s3:::${env:XC_AUTH_BUCKET}/*  # 允許訪問 bucket 內的所有對象
-      - arn:aws:s3:::${env:XC_AUTH_BUCKET}    # 允許訪問 bucket 本身
+    - dynamodb:PutItem
+    - dynamodb:GetItem
+    - dynamodb:UpdateItem
+    - dynamodb:DeleteItem
+    - dynamodb:Query
+    Resource: arn:aws:dynamodb:${env:THE_REGION}:*:table/${env:DYNAMODB_TABLE_ACCOUNTS}
+
 
 # you can define service wide environment variables here
 #  environment:
