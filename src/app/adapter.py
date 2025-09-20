@@ -8,18 +8,20 @@ from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..domain.auth.service.auth_service import AuthService
 from ..domain.auth.service.oauth_service import OauthService
+from ..domain.auth.service.mail_service import MailService
+
 ###############################################
 # session/resource/connection/connect pool
 ###############################################
 
 session = aioboto3.Session()
 io_resource_manager = IOResourceManager(resources={
-    # 'sql': SQLResourceHandler(),
+    'sql': SQLResourceHandler(),
     'dynamodb': NoSQLResourceHandler(session),
     'ses': SESResourceHandler(session),
 })
 
-sql_rsc = None # io_resource_manager.get('sql')
+sql_rsc = io_resource_manager.get('sql')
 dynamodb_rsc = io_resource_manager.get('dynamodb')
 email_rec = io_resource_manager.get('ses')
 
@@ -66,8 +68,12 @@ async def db_auto_session():
 ########################
 # client/repo/adapter
 ########################
+async def init_mail_service() -> MailService:
+    async for session in db_session():
+        return MailService(db_session=session)
 
-email_client = EmailClient(ses=email_rec)
+
+email_client = EmailClient(ses=email_rec, mail_service_factory=init_mail_service)
 http_request = AsyncServiceApiAdapter()
 auth_repo = AuthRepository()
 ddb_auth_repo = DynamoDBAuthRepository()
