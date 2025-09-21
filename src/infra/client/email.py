@@ -8,7 +8,7 @@ from ...config.exception import *
 from ...config.conf import *
 from ...config.constant import MailTemplateType
 from ...infra.db.sql.orm.mail_template_orm import MailTemplate
-from ...domain.auth.service.mail_service import MailService
+from ...infra.cache.mail_template_cache import MailTemplateCache
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -17,16 +17,16 @@ log = logging.getLogger(__name__)
 
 class EmailClient:
     # TODO: Change the mail template to database then the X-Career-User can utilize it.
-    def __init__(self, ses: SESResourceHandler, mail_service_factory):
+    def __init__(self, ses: SESResourceHandler, mail_template_cache_factory):
         self.ses = ses
-        self._mail_service_factory = mail_service_factory
-        self.mail_service: MailService | None = None
+        self._mail_template_cache_factory = mail_template_cache_factory
+        self.template_cache: MailTemplateCache | None = None
 
     async def init(self):
-        self.mail_service = await self._mail_service_factory()
+        self.template_cache = await self._mail_template_cache_factory()
 
     async def load_template(self):
-        await self.mail_service.get_mail_template()
+        await self.template_cache.get_mail_template()
 
     async def send_content(self, recipient: EmailStr, subject: str, body: str) -> None:
         log.info(f'send email: {recipient}, subject: {subject}, body: {body}')
@@ -61,7 +61,7 @@ class EmailClient:
         await self.load_template()
         log.info(f'send email: {email}, code: {confirm_code}')
         try:
-            html_template = self.mail_service.render_email({
+            html_template = self.template_cache.render_email({
                         "template_type": MailTemplateType.VERIFICATION_CODE.value,
                         "title": "Verification Code",
                         "confirm_code": confirm_code,
@@ -104,7 +104,7 @@ class EmailClient:
         log.info(f'send email: {email}, code: {token}')
         log.info(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
         try:
-            html_template = self.mail_service.render_email({
+            html_template = self.template_cache.render_email({
                         "template_type": MailTemplateType.RESET_PASSWORD.value,
                         "title": "Password Reset",
                         "reset_url": f"{FRONTEND_RESET_PASSWORD_URL}{token}",
@@ -147,7 +147,7 @@ class EmailClient:
         log.info(f'send email: {email}, code: {token}')
         log.info(f'{FRONTEND_SIGNUP_URL}{token}')
         try:
-            html_template = self.mail_service.render_email({
+            html_template = self.template_cache.render_email({
                         "template_type": MailTemplateType.SIGNUP.value,
                         "title": f"Welcome to {SITE_TITLE}!",
                         "site_title": SITE_TITLE,

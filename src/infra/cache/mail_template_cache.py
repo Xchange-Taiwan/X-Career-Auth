@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from ....infra.db.sql.orm.mail_template_orm import MailTemplate
-from ....config.constant import MailTemplateType
-from ....config.exception import *
+from src.infra.db.sql.orm.mail_template_orm import MailTemplate
+from src.config.constant import MailTemplateType
+from src.config.exception import *
 from jinja2 import Template, TemplateError, UndefinedError, StrictUndefined
 from jinja2 import Template
 import logging
@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-class MailService:
+class MailTemplateCache:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
         self._cached_mail_template = None
