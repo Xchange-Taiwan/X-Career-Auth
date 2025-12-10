@@ -5,7 +5,6 @@ from ...config.conf import PROBE_CYCLE_SECS
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

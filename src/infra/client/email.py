@@ -11,7 +11,6 @@ from ...infra.db.sql.orm.mail_template_orm import MailTemplate
 from ...infra.cache.mail_template_cache import MailTemplateCache
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

@@ -10,7 +10,6 @@ from .....domain.auth.model.auth_model import UpdatePasswordDTO
 from .....domain.auth.model.auth_entity import AccountEntity
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

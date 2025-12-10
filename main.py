@@ -1,3 +1,6 @@
+from src.config.logging_config import init_logging
+log = init_logging()
+
 import os, asyncio
 from mangum import Mangum
 from fastapi import FastAPI, Request, \

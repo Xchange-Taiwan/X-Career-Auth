@@ -4,7 +4,6 @@ from ._resource import ResourceHandler
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

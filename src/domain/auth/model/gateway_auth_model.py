@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr, validator
 from ....config.exception import ClientException
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

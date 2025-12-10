@@ -2,10 +2,9 @@ from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from typing import Any
 from ..router.res.response import res_err_format
-import logging as log
+import logging
 
-log.basicConfig(filemode='w', level=log.INFO)
-
+log = logging.getLogger(__name__)
 
 class ErrorLogger:
     def __init__(self, msg: str):
