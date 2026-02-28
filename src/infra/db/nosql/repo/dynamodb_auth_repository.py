@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, List, Optional, Callable
 from pydantic import EmailStr
 from src.config.conf import DDB_TABLE_ACCOUNTS
@@ -7,6 +8,19 @@ from src.domain.auth.model.auth_entity import AccountEntity
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def _normalize_dynamodb_item(item: dict) -> dict:
+    """DynamoDB 回傳的數字為 Decimal，需轉成 int/float 才能正確建構 AccountEntity。"""
+    if not item:
+        return item
+    result = {}
+    for k, v in item.items():
+        if isinstance(v, Decimal):
+            result[k] = int(v) if v % 1 == 0 else float(v)
+        else:
+            result[k] = v
+    return result
 
 
 class DynamoDBAuthRepository(IAuthRepository):
@@ -22,6 +36,8 @@ class DynamoDBAuthRepository(IAuthRepository):
             response = await table.get_item(Key={'email': email})
             account_data = response.get('Item')
             if account_data:
+                # DynamoDB 數字欄位 (aid, user_id, created_at, updated_at) 回傳為 Decimal，須轉成 int
+                account_data = _normalize_dynamodb_item(account_data)
                 if fields == ['*']:
                     return AccountEntity(**account_data)
                 else:
