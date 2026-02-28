@@ -20,7 +20,6 @@ from ...config.exception import *
 from ...config.constant import AccountType
 import logging
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 

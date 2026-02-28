@@ -77,3 +77,8 @@ class AccountType(Enum):
     XC = 'XC'
     GOOGLE = 'GOOGLE'
     LINKEDIN = 'LINKEDIN'
+
+class MailTemplateType(Enum):
+    VERIFICATION_CODE = "verification_code"
+    SIGNUP = "signup"
+    RESET_PASSWORD = "reset_password"

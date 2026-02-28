@@ -1,3 +1,6 @@
+from src.config.logging_config import init_logging
+log = init_logging()
+
 import os, asyncio
 from mangum import Mangum
 from fastapi import FastAPI, Request, \
@@ -8,7 +11,7 @@ from fastapi import FastAPI, Request, \
     APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from src.app.adapter import io_resource_manager
+from src.app.adapter import io_resource_manager, email_client
 from src.router.v1 import (
     auth, oauth,
 )
@@ -22,6 +25,7 @@ app = FastAPI(title='X-Career: Auth', root_path=root_path)
 @app.on_event('startup')
 async def startup_event():
     await io_resource_manager.initial()
+    await email_client.init()
     asyncio.create_task(io_resource_manager.keeping_probe())
 
 
