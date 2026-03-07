@@ -34,10 +34,13 @@ EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'testing_visitor@xchange.com.tw')
 EMAIL_VERIFY_CODE_TEMPLATE = os.getenv('EMAIL_VERIFY_CODE_TEMPLATE', None)
 EMAIL_RESET_PASSWORD_TEMPLATE = os.getenv(
     'EMAIL_RESET_PASSWORD_TEMPLATE', None)
-FRONTEND_SIGNUP_URL = os.getenv(
-    'FRONTEND_SIGNUP_URL', 'http://localhost:8002/auth/signup?token=')
-FRONTEND_RESET_PASSWORD_URL = os.getenv(
-    'FRONTEND_RESET_PASSWORD_URL', 'http://localhost:8002/auth/reset_password?token=')
+# 前端連結：{FRONTEND_HOSTNAME}{FRONTEND_URL_PATH_*}?{FRONTEND_TOKEN}={token}
+FRONTEND_HOSTNAME = os.getenv('FRONTEND_HOSTNAME', 'http://localhost:8002')
+FRONTEND_URL_PATH_EMAIL_VERIFIED = os.getenv(
+    'FRONTEND_URL_PATH_EMAIL_VERIFIED', '/auth/email-verified')
+FRONTEND_URL_PATH_RESET_PASSWORD = os.getenv(
+    'FRONTEND_URL_PATH_RESET_PASSWORD', '/auth/password-reset')
+FRONTEND_TOKEN = os.getenv('FRONTEND_TOKEN', 'token')
 SES_CONNECT_TIMEOUT = int(os.getenv('SES_CONNECT_TIMEOUT', 10))
 SES_READ_TIMEOUT = int(os.getenv('SES_READ_TIMEOUT', 10))
 SES_MAX_ATTEMPTS = int(os.getenv('SES_MAX_ATTEMPTS', 3))
