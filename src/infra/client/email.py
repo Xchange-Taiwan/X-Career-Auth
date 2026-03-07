@@ -100,13 +100,14 @@ class EmailClient:
 
     async def send_reset_password_comfirm_email(self, email: EmailStr, token: str) -> None:
         await self.load_template()
+        reset_url = f"{FRONTEND_HOSTNAME.rstrip('/')}{FRONTEND_URL_PATH_RESET_PASSWORD}?{FRONTEND_TOKEN}={token}"
         log.info(f'send email: {email}, code: {token}')
-        log.info(f'{FRONTEND_RESET_PASSWORD_URL}{token}')
+        log.info(reset_url)
         try:
             html_template = self.template_cache.render_email({
                         "template_type": MailTemplateType.RESET_PASSWORD.value,
                         "title": "Password Reset",
-                        "reset_url": f"{FRONTEND_RESET_PASSWORD_URL}{token}",
+                        "reset_url": reset_url,
                     })
             email_rsc = await self.ses.access()
             async with email_rsc as email_client:
@@ -129,7 +130,7 @@ class EmailClient:
                 #         'ToAddresses': [email],
                 #     },
                 #     Template=EMAIL_RESET_PASSWORD_TEMPLATE,
-                #     TemplateData=f'{"reset_password_url":"{FRONTEND_RESET_PASSWORD_URL}","token":"{token}"}'
+                #     TemplateData=f'{"reset_password_url":"{FRONTEND_HOSTNAME}{FRONTEND_URL_PATH_RESET_PASSWORD}?{FRONTEND_TOKEN}={token}"}'
                 # )
                 log.info(f'Email sent. Message ID: {response.get("MessageId", None)}')
 
@@ -143,14 +144,15 @@ class EmailClient:
 
     async def send_signup_confirm_email(self, email: EmailStr, token: str) -> None:
         await self.load_template()
+        confirm_url = f"{FRONTEND_HOSTNAME.rstrip('/')}{FRONTEND_URL_PATH_EMAIL_VERIFIED}?{FRONTEND_TOKEN}={token}"
         log.info(f'send email: {email}, code: {token}')
-        log.info(f'{FRONTEND_SIGNUP_URL}{token}')
+        log.info(confirm_url)
         try:
             html_template = self.template_cache.render_email({
                         "template_type": MailTemplateType.SIGNUP.value,
                         "title": f"Welcome to {SITE_TITLE}!",
                         "site_title": SITE_TITLE,
-                        "confirm_url": f"{FRONTEND_SIGNUP_URL}{token}", 
+                        "confirm_url": confirm_url,
                     })
             email_rsc = await self.ses.access()
             async with email_rsc as email_client:
