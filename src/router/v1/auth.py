@@ -89,3 +89,12 @@ async def send_reset_password_confirm_email(
 ):
     verify_token = await _auth_service.send_reset_password_confirm_email(db, email)
     return res_success(msg='email sent', data={'token': verify_token})
+
+
+@router.delete('/accounts', status_code=status.HTTP_200_OK)
+async def delete_account(
+    payload: auth.DeleteAccountDTO = Body(...),
+    db: AsyncSession = Depends(ddb_session),
+):
+    await _auth_service.delete_account(db, payload.email)
+    return res_success(msg='deleted')

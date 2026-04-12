@@ -2,8 +2,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "FastAPI",
-            "type": "python",
+            "name": "Python Debugger: FastAPI (Auth)",
+            "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
             "args": [
