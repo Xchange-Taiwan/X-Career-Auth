@@ -87,6 +87,10 @@ class AccountVO(BaseModel):
         use_enum_values = True
 
 
+class DeleteAccountDTO(BaseModel):
+    email: EmailStr
+
+
 class AccountOauthVO(AccountVO):
     aid: int
     email: EmailStr

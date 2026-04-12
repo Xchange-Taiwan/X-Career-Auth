@@ -249,6 +249,26 @@ class AuthService:
             err_msg = getattr(e, "msg", "Unable to update password")
             raise_http_exception(e=e, msg=err_msg)
 
+    async def delete_account(self, db: AsyncSession, email: str) -> int:
+        try:
+            account_entity = await self.auth_repo.find_account_by_email(
+                db=db, email=email
+            )
+            if account_entity is None:
+                return 0
+
+            await self.auth_repo.delete_account_by_email(db, account_entity)
+            return 1
+
+        except Exception as e:
+            log.error(
+                f"{self.cls_name}.delete_account [unknown_err] email:%s, err:%s",
+                email,
+                e.__str__(),
+            )
+            err_msg = getattr(e, "msg", "Unable to delete account")
+            raise_http_exception(e=e, msg=err_msg)
+
     async def send_reset_password_confirm_email(
         self, db: AsyncSession, email: EmailStr  # read db
     ) -> str:
