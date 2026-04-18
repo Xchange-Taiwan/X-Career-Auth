@@ -25,17 +25,17 @@ class CalendarService:
             account = await self.auth_repo.find_account_by_user_id(db, uid)
             
             if not account:
-                log.warning(f"[Calendar] 找不到 User ID: {uid} 的帳號資訊")
+                log.warning(f"[Calendar] Account not found for User ID: {uid}")
                 continue
                 
             if not account.email:
-                log.warning(f"[Calendar] User ID: {uid} 帳號存在但未設定 Email")
+                log.warning(f"[Calendar] User ID: {uid} account exists but has no Email set")
                 continue
             
             attendee_emails.append(account.email)
 
         if not attendee_emails:
-            error_detail = f"無法為參與者建立日曆邀請：清單中的 User IDs {user_ids} 均無有效 Email"
+            error_detail = f"Failed to create calendar invite: no valid Email found for User IDs {user_ids}"
             log.error(error_detail)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
@@ -61,7 +61,7 @@ class CalendarService:
                 'sent_to': attendee_emails
             }
         except Exception as e:
-            log.error(f"建立 Google 日曆活動失敗: {e}")
+            log.error(f"Failed to create Google Calendar event: {e}")
             raise e
 
     async def delete_calendar_event(self, event_id: str) -> Dict[str, Any]:

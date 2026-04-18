@@ -27,10 +27,10 @@ class CalendarClient:
         """
         async with self._lock:
             if not self.service:
-                log.info("初始化 Google Calendar Service...")
+                log.info("Initializing Google Calendar Service...")
                 token_env = GOOGLE_CALENDAR_TOKEN
                 if not token_env:
-                    raise Exception("環境變數缺少 GOOGLE_CALENDAR_TOKEN")
+                    raise Exception("Missing environment variable: GOOGLE_CALENDAR_TOKEN")
                 
                 creds = Credentials.from_authorized_user_info(json.loads(token_env), self.scopes)
                 self.service = build('calendar', 'v3', credentials=creds)
@@ -41,11 +41,11 @@ class CalendarClient:
             # 檢查是否過期
             if not creds.valid:
                 if creds.expired and creds.refresh_token:
-                    log.info("Token 已過期，正在執行 Refresh")
+                    log.info("Token expired, refreshing...")
                     creds.refresh(Request())
-                    log.info(f"Refresh 成功！新到期時間: {creds.expiry}")
+                    log.info(f"Token refreshed successfully! New expiry: {creds.expiry}")
                 else:
-                    raise Exception("Token 失效且無法自動續期")
+                    raise Exception("Token invalid and cannot be refreshed automatically")
 
     async def create_event(self, summary: str, description: str, start_time: datetime, end_time: datetime, attendee_emails: list[str]):
         await self._ensure_initialized()
@@ -53,9 +53,9 @@ class CalendarClient:
         try:
             attendees_str = ", ".join(attendee_emails)
             log.info(
-                f"開始建立日曆行程: 【{summary}】 | "
-                f"時間: {start_time.strftime('%Y-%m-%d %H:%M')} | "
-                f"邀請對象: [{attendees_str}]"
+                f"Creating calendar event: [{summary}] | "
+                f"Time: {start_time.strftime('%Y-%m-%d %H:%M')} | "
+                f"Attendees: [{attendees_str}]"
             )
 
             request_id = f"x-career-{int(datetime.now().timestamp())}"
@@ -86,11 +86,11 @@ class CalendarClient:
                 conferenceDataVersion=1
             ).execute()
 
-            log.info(f"行程建立成功！google event ID: {created_event.get('id')} | Meet 連結: {created_event.get('hangoutLink')}")
+            log.info(f"Event created successfully! Google event ID: {created_event.get('id')} | Meet link: {created_event.get('hangoutLink')}")
             return created_event
 
         except HttpError as error:
-            log.error(f"Google API 呼叫失敗: {error}")
+            log.error(f"Google API call failed: {error}")
             raise error
 
     async def delete_event(self, event_id: str):
@@ -99,7 +99,7 @@ class CalendarClient:
         def _execute_delete():
             try:
                 log.info(
-                    f"開始刪除日曆行程 google event ID: {event_id}"  
+                    f"Deleting calendar event, Google event ID: {event_id}"  
                 )
                 
                 self.service.events().delete(
@@ -108,12 +108,12 @@ class CalendarClient:
                     sendUpdates='all'
                 ).execute()
                 
-                log.info(f"行程刪除成功。")
+                log.info(f"Event deleted successfully.")
             except HttpError as error:
                 if error.resp.status in [404, 410]:
-                    log.warning(f"行程已不存在於 Google 日曆，無需重複刪除 [ID: {event_id}]")
+                    log.warning(f"Event no longer exists in Google Calendar, skipping deletion [ID: {event_id}]")
                     return
-                log.error(f"刪除 Google 行程失敗 [ID: {event_id}]: {error}")
+                log.error(f"Failed to delete Google Calendar event [ID: {event_id}]: {error}")
                 raise error
 
         return await asyncio.to_thread(_execute_delete)
