@@ -1,6 +1,6 @@
 # X-Career-Auth
 
-Authentication service for the X-Talent platform. Handles email/password credentials, Google OAuth, LinkedIn OAuth, and email verification. Deployed as an AWS Lambda function via the Serverless Framework.
+Authentication service for the X-Talent platform. Handles email/password credentials and email verification. Deployed as an AWS Lambda function via the Serverless Framework.
 
 ## Prerequisites
 
@@ -46,17 +46,12 @@ Copy `.env.example` to `.env` and fill in the values below.
 | `DB_URL` | `postgresql+asyncpg://kao:password@localhost:5432/postgres` | PostgreSQL connection string |
 | `PSQL_TENANT_NAMESPACES` | `x-career-dev,public` | Database schemas (comma-separated) |
 | `DYNAMODB_TABLE_ACCOUNTS` | `dev_x_career_auth_accounts` | DynamoDB table name |
-| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | — | Google OAuth redirect URI |
-| `LINKEDIN_APP_ID` | — | LinkedIn OAuth app ID |
-| `LINKEDIN_APP_SECRET` | — | LinkedIn OAuth app secret |
-| `LINKEDIN_REDIRECT_URI` | — | LinkedIn OAuth redirect URI |
+| `SITE_TITLE` | `X-Career` | Site title used in email subjects |
 | `FRONTEND_HOSTNAME` | `http://localhost:8002` | Frontend base URL |
+| `FRONTEND_URL_PATH_EMAIL_VERIFIED` | `/auth/email-verified` | Frontend path for email verification redirect |
+| `FRONTEND_URL_PATH_RESET_PASSWORD` | `/auth/password-reset` | Frontend path for password reset redirect |
 | `FRONTEND_TOKEN` | — | Token used to validate frontend requests |
 | `EMAIL_SENDER` | — | SES sender email address |
-| `EMAIL_VERIFY_CODE_TEMPLATE` | — | SES template name for verification emails |
-| `EMAIL_RESET_PASSWORD_TEMPLATE` | — | SES template name for password reset emails |
 
 ### Minimal local setup
 
@@ -88,4 +83,4 @@ All routes are prefixed with `/auth-service/api/v1`.
 ./deploy.sh -e dev -r ap-northeast-1
 ```
 
-The script substitutes environment variables from `.env` into `serverless.yml` then runs `sls deploy`.
+The script substitutes environment variables from `.env` into `serverless.yml` then runs `sh deploy.sh -e dev -r ap-northeast-1`.
