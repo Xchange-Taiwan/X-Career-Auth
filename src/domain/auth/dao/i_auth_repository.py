@@ -18,6 +18,10 @@ class IAuthRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_account_by_user_id(self, db: Any, user_id: int) -> Optional[AccountEntity]:
+        pass
+
+    @abstractmethod
     async def create_account(self, db: AsyncSession, account_entity: AccountEntity) -> (AccountEntity):
         pass
 
