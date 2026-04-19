@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from src.config.logging_config import init_logging
 log = init_logging()
 

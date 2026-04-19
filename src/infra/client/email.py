@@ -5,7 +5,14 @@ from pydantic import EmailStr
 from botocore.exceptions import ClientError
 from ..resource.handler.email_resource import SESResourceHandler
 from ...config.exception import *
-from ...config.conf import *
+from ...config.conf import (
+    EMAIL_SENDER,
+    SITE_TITLE,
+    FRONTEND_HOSTNAME,
+    FRONTEND_URL_PATH_RESET_PASSWORD,
+    FRONTEND_TOKEN,
+    FRONTEND_URL_PATH_EMAIL_VERIFIED,
+)
 from ...config.constant import MailTemplateType
 from ...infra.db.sql.orm.mail_template_orm import MailTemplate
 from ...infra.cache.mail_template_cache import MailTemplateCache
