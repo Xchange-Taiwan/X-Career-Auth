@@ -6,9 +6,11 @@ from ..infra.db.sql.repo.auth_repository import AuthRepository
 from ..infra.db.nosql.repo.dynamodb_auth_repository import DynamoDBAuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
+from ..infra.client.calendar import CalendarClient
 from ..infra.cache.mail_template_cache import MailTemplateCache
 from ..domain.auth.service.auth_service import AuthService
 from ..domain.auth.service.oauth_service import OauthService
+from ..domain.calendar.service.calendar_service import CalendarService
 
 ###############################################
 # session/resource/connection/connect pool
@@ -75,6 +77,7 @@ async def init_mail_template_cache() -> MailTemplateCache:
 
 email_client = EmailClient(ses=email_rec, mail_template_cache_factory=init_mail_template_cache)
 http_request = AsyncServiceApiAdapter()
+calendar_client = CalendarClient()
 auth_repo = AuthRepository()
 ddb_auth_repo = DynamoDBAuthRepository()
 
@@ -92,4 +95,8 @@ _oauth_service = OauthService(
     auth_repo=ddb_auth_repo,
     email_client=email_client,
     http_request=http_request,
+)
+_calendar_service = CalendarService(
+    calendar_client=calendar_client, 
+    auth_repo=ddb_auth_repo
 )

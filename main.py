@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.adapter import io_resource_manager, email_client
 from src.router.v1 import (
-    auth, oauth,
+    auth, oauth, calendar,
 )
 from src.config import exception
 
@@ -48,6 +48,7 @@ app.add_middleware(
 router_v1 = APIRouter(prefix='/auth-service/api/v1')
 router_v1.include_router(auth.router)
 router_v1.include_router(oauth.router)
+router_v1.include_router(calendar.router)
 app.include_router(router_v1)
 
 exception.include_app(app)

@@ -40,3 +40,7 @@ FRONTEND_TOKEN = os.getenv('FRONTEND_TOKEN', 'token')
 SES_CONNECT_TIMEOUT = int(os.getenv('SES_CONNECT_TIMEOUT', 10))
 SES_READ_TIMEOUT = int(os.getenv('SES_READ_TIMEOUT', 10))
 SES_MAX_ATTEMPTS = int(os.getenv('SES_MAX_ATTEMPTS', 3))
+
+# google calendar conf
+GOOGLE_CALENDAR_TOKEN = os.getenv('GOOGLE_CALENDAR_TOKEN', None)
+GOOGLE_CALENDAR_ID = os.getenv('GOOGLE_CALENDAR_ID', 'primary')

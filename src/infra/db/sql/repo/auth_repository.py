@@ -40,6 +40,23 @@ class AuthRepository(IAuthRepository):
             log.error(f'Error in %s.find_account_by_email: %s',
                       self.cls_name, e)
             return None
+        
+    async def find_account_by_user_id(
+        self, db: AsyncSession, user_id: int
+    ) -> Optional[AccountEntity]:
+        try:
+            query = select(Account).where(Account.user_id == user_id)
+            result = await db.execute(query)
+            account = result.scalar_one_or_none()
+            
+            if account is None:
+                return None
+                
+            return AccountEntity.from_orm(account)
+        except SQLAlchemyError as e:
+            log.error(f'Error in %s.find_account_by_user_id: %s', 
+                      self.cls_name, e)
+            return None
 
     async def find_account_by_oauth_id(self, db: AsyncSession, oauth_id: str, fields: List = ['*']) -> (Optional[AccountEntity]):
         try:
