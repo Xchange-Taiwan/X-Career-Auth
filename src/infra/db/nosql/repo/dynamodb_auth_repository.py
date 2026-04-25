@@ -59,6 +59,27 @@ class DynamoDBAuthRepository(IAuthRepository):
         # 別用這個 function, 外部 OAuth 登入 改用 find_account_by_email
         pass
 
+    async def find_account_by_user_id(
+        self, db: Any, user_id: int
+    ) -> Optional[AccountEntity]:
+        try:
+            table = await db.Table(DDB_TABLE_ACCOUNTS)
+            
+            response = await table.scan(
+                FilterExpression="user_id = :uid",
+                ExpressionAttributeValues={":uid": user_id}
+            )
+            
+            items = response.get('Items')
+            if items:
+                account_data = _normalize_dynamodb_item(items[0])
+                return AccountEntity(**account_data)
+            
+            return None
+        except Exception as e:
+            log.error('Error in find_account_by_user_id: %s, %s', user_id, e)
+            return None
+
 
     async def create_account(
         self, db: Any, account_entity: AccountEntity
