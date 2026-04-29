@@ -56,6 +56,7 @@ provider:
     - dynamodb:UpdateItem
     - dynamodb:DeleteItem
     - dynamodb:Query
+    - dynamodb:Scan
     Resource: arn:aws:dynamodb:${env:THE_REGION}:*:table/${env:DYNAMODB_TABLE_ACCOUNTS}
 
 
