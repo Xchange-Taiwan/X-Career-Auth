@@ -27,9 +27,22 @@ app = FastAPI(title='X-Career: Auth', root_path=root_path)
 
 @app.on_event('startup')
 async def startup_event():
-    await io_resource_manager.initial()
-    await email_client.init()
+    # Schedule resource setup in the background so the Lambda becomes ready to
+    # accept traffic immediately. The DB pool is then initialized lazily by the
+    # first request that calls SQLResourceHandler.accessing(), which already
+    # builds the pool under a lock when self.engine is None. Previously this
+    # blocked startup for several seconds on a cold start and BFF's httpx call
+    # would time out before Auth was ready, surfacing as a 500.
+    asyncio.create_task(_warmup_resources())
     asyncio.create_task(io_resource_manager.keeping_probe())
+
+
+async def _warmup_resources():
+    try:
+        await io_resource_manager.initial()
+        await email_client.init()
+    except Exception as e:
+        log.error('Resource warmup failed (will retry lazily): %s', e)
 
 
 @app.on_event('shutdown')
