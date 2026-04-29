@@ -19,11 +19,6 @@ class ExperienceCategory(Enum):
     LINK = 'link'
 
 
-class ScheduleType(Enum):
-    ALLOW = 'allow'
-    FORBIDDEN = 'forbidden'
-
-
 class RoleType(Enum):
     MENTOR = 'mentor'
     MENTEE = 'mentee'
