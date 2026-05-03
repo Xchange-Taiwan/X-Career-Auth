@@ -1,0 +1,112 @@
+# dev 分支推送時部署至 AWS Lambda（Serverless Framework）
+# 部署後的 Lambda 環境變數對齊 dev-env-deploy.sh
+# GitHub Repository secrets 請使用 _DEV 結尾命名（見檔內 secrets.*_DEV）
+name: X-Career-Auth Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Node dependencies (Serverless)
+        run: npm install
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to AWS Lambda
+        run: npx sls deploy --stage dev --region ${{ secrets.AWS_REGION }}
+        env:
+          STAGE: dev
+          THE_REGION: ${{ secrets.AWS_REGION }}
+          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          DYNAMODB_TABLE_ACCOUNTS: ${{ secrets.DYNAMODB_TABLE_ACCOUNTS_DEV }}
+
+      - name: Update Lambda environment variables
+        env:
+          DYNAMODB_TABLE_ACCOUNTS: ${{ secrets.DYNAMODB_TABLE_ACCOUNTS_DEV }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER_DEV }}
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID_DEV }}
+          GOOGLE_CALENDAR_TOKEN: ${{ secrets.GOOGLE_CALENDAR_TOKEN_DEV }}
+          FRONTEND_HOSTNAME: ${{ secrets.FRONTEND_HOSTNAME_DEV }}
+          DB_URL: ${{ secrets.DB_URL_DEV }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD_DEV }}
+          DB_HOST: ${{ secrets.DB_HOST_DEV }}
+          DB_NAME: ${{ secrets.DB_NAME_DEV }}
+          DB_USER: ${{ secrets.DB_USER_DEV }}
+          PSQL_TENANT_NAMESPACES: ${{ secrets.PSQL_TENANT_NAMESPACES_DEV }}
+        run: |
+          jq -n \
+            --arg DYNAMODB_TABLE_ACCOUNTS "$DYNAMODB_TABLE_ACCOUNTS" \
+            --arg EMAIL_SENDER "$EMAIL_SENDER" \
+            --arg GOOGLE_CALENDAR_ID "$GOOGLE_CALENDAR_ID" \
+            --arg GOOGLE_CALENDAR_TOKEN "$GOOGLE_CALENDAR_TOKEN" \
+            --arg FRONTEND_HOSTNAME "$FRONTEND_HOSTNAME" \
+            --arg DB_URL "$DB_URL" \
+            --arg DB_PASSWORD "$DB_PASSWORD" \
+            --arg DB_HOST "$DB_HOST" \
+            --arg DB_NAME "$DB_NAME" \
+            --arg DB_USER "$DB_USER" \
+            --arg PSQL_TENANT_NAMESPACES "$PSQL_TENANT_NAMESPACES" \
+            '{
+              FunctionName: "x-career-auth-dev-app",
+              Environment: {
+                Variables: {
+                  PROBE_CYCLE_SECS: "3",
+                  DYNAMODB_TABLE_ACCOUNTS: $DYNAMODB_TABLE_ACCOUNTS,
+                  BATCH_LIMIT: "20",
+                  DB_URL: $DB_URL,
+                  POOL_PRE_PING: "1",
+                  POOL_RECYCLE: "300",
+                  POOL_SIZE: "10",
+                  MAX_OVERFLOW: "20",
+                  AUTO_COMMIT: "0",
+                  AUTO_FLUSH: "0",
+                  PSQL_TENANT_NAMESPACES: $PSQL_TENANT_NAMESPACES,
+                  SITE_TITLE: "X-Career",
+                  EMAIL_SENDER: $EMAIL_SENDER,
+                  FRONTEND_HOSTNAME: $FRONTEND_HOSTNAME,
+                  FRONTEND_URL_PATH_EMAIL_VERIFIED: "/auth/email-verified",
+                  FRONTEND_URL_PATH_RESET_PASSWORD: "/auth/password-reset",
+                  GOOGLE_CALENDAR_ID: $GOOGLE_CALENDAR_ID,
+                  GOOGLE_CALENDAR_TOKEN: $GOOGLE_CALENDAR_TOKEN,
+                  FRONTEND_TOKEN: "token",
+                  SES_CONNECT_TIMEOUT: "10",
+                  SES_READ_TIMEOUT: "10",
+                  SES_MAX_ATTEMPTS: "3",
+                  DB_HOST: $DB_HOST,
+                  DB_NAME: $DB_NAME,
+                  DB_USER: $DB_USER,
+                  DB_PASSWORD: $DB_PASSWORD
+                }
+              }
+            }' > /tmp/auth-lambda-update.json
+          aws lambda update-function-configuration --cli-input-json file:///tmp/auth-lambda-update.json
