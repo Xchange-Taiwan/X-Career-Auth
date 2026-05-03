@@ -22,17 +22,7 @@ from src.config import exception
 
 STAGE = os.environ.get('STAGE')
 root_path = '/' if not STAGE else f'/{STAGE}'
-# API Gateway stage 在 URL 裡是 /{stage}/...；Swagger 內建若用絕對路徑 /openapi.json
-# 瀏覽器會打到根網域而非 /{stage}/openapi.json（常為 403），故在 Lambda 須掛在 stage 底下。
-if STAGE:
-    app = FastAPI(
-        title='X-Career: Auth',
-        root_path=root_path,
-        docs_url=f'/{STAGE}/docs',
-        openapi_url=f'/{STAGE}/openapi.json',
-    )
-else:
-    app = FastAPI(title='X-Career: Auth', root_path=root_path)
+app = FastAPI(title='X-Career: Auth', root_path=root_path)
 
 
 @app.on_event('startup')
