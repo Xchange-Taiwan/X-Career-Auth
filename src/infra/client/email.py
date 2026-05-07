@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import aioboto3
 from pydantic import EmailStr
 from botocore.exceptions import ClientError
@@ -27,12 +28,31 @@ class EmailClient:
         self.ses = ses
         self._mail_template_cache_factory = mail_template_cache_factory
         self.template_cache: MailTemplateCache | None = None
+        # Single-flight lock: under cold-start, requests can pile up before
+        # the template is loaded; we want exactly one factory call, not N.
+        self._init_lock = asyncio.Lock()
 
     async def init(self):
-        self.template_cache = await self._mail_template_cache_factory()
+        # Idempotent and optional. load_template() self-heals on every call,
+        # so a request that lands before warmup finishes still works.
+        await self._ensure_loaded()
+
+    async def _ensure_loaded(self) -> None:
+        # Fast path: cache already populated.
+        if self.template_cache is not None and self.template_cache._cached_mail_template:
+            return
+        async with self._init_lock:
+            # Re-check inside the lock — another caller may have loaded it
+            # while we were waiting.
+            if self.template_cache is not None and self.template_cache._cached_mail_template:
+                return
+            # Build a fresh cache (factory primes it inside its own session
+            # scope, so what we get back is already usable). Only publish
+            # after success — render_email() never sees a half-init cache.
+            self.template_cache = await self._mail_template_cache_factory()
 
     async def load_template(self):
-        await self.template_cache.get_mail_template()
+        await self._ensure_loaded()
 
     async def send_content(self, recipient: EmailStr, subject: str, body: str) -> None:
         log.info(f'send email: {recipient}, subject: {subject}, body: {body}')

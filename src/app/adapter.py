@@ -71,8 +71,21 @@ async def db_auto_session():
 # client/repo/adapter
 ########################
 async def init_mail_template_cache() -> MailTemplateCache:
-    async for session in db_session():
-        return MailTemplateCache(db_session=session)
+    # Open the session via async-with directly (not via the db_session()
+    # generator) so it is properly closed when this function returns. The
+    # earlier `async for session in db_session(): return ...` pattern
+    # abandoned the generator without an explicit aclose(), leaking a
+    # connection that surfaced later as the SAWarning about non-checked-in
+    # connections being terminated by GC.
+    #
+    # Prime the in-memory template *inside* the session scope so that, by
+    # the time we return, the cache is fully populated and never needs to
+    # touch the (about-to-be-closed) session again.
+    session_local = await sql_rsc.access()
+    async with session_local() as session:
+        cache = MailTemplateCache(db_session=session)
+        await cache.get_mail_template()
+        return cache
 
 
 email_client = EmailClient(ses=email_rec, mail_template_cache_factory=init_mail_template_cache)
