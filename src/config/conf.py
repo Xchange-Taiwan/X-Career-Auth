@@ -21,6 +21,9 @@ POOL_SIZE = int(os.getenv('POOL_SIZE', 10))         # 連線池大小
 MAX_OVERFLOW = int(os.getenv('MAX_OVERFLOW', 20))   # 超出連線池大小時，最大連線數
 AUTO_COMMIT = bool(int(os.getenv('AUTO_COMMIT', '0')))  # 自動提交
 AUTO_FLUSH = bool(int(os.getenv('AUTO_FLUSH', '0')))    # 自動刷新
+# asyncpg ssl 模式: disable / allow / prefer / require / verify-ca / verify-full
+# RDS 預設要求加密 (rds.force_ssl)，明文連線會被 pg_hba 以 "no encryption" 拒絕
+DB_SSL = os.getenv('DB_SSL', '')  # AWS 上設 'require'，空字串為本機不加密
 
 # postgres 為多租戶設計的機制，透過 schema 來區分不同租戶的資料
 PSQL_TENANT_NAMESPACES = os.getenv(

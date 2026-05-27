@@ -85,6 +85,7 @@ jobs:
                   DYNAMODB_TABLE_ACCOUNTS: $DYNAMODB_TABLE_ACCOUNTS,
                   BATCH_LIMIT: "20",
                   DB_URL: $DB_URL,
+                  DB_SSL: "require",
                   POOL_PRE_PING: "1",
                   POOL_RECYCLE: "300",
                   POOL_SIZE: "10",
