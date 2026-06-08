@@ -1,9 +1,29 @@
 import pytest
 import httpx
+import sys
+import importlib.util
 import os
 from fastapi.testclient import TestClient
 import uuid
 from unittest.mock import AsyncMock
+
+# urllib3 1.x vendors an older six whose _SixMetaPathImporter only implements find_module.
+# pytest --import-mode=importlib iterates sys.meta_path calling find_spec, which crashes
+# on that finder. Wrap any legacy finder so it exposes find_spec.
+def _patch_legacy_metapath_finders():
+    for finder in sys.meta_path:
+        if hasattr(finder, "find_spec") or not hasattr(finder, "find_module"):
+            continue
+        def make_find_spec(legacy):
+            def find_spec(name, path=None, target=None):
+                loader = legacy.find_module(name, path)
+                if loader is None:
+                    return None
+                return importlib.util.spec_from_loader(name, loader)
+            return find_spec
+        finder.find_spec = make_find_spec(finder)
+
+_patch_legacy_metapath_finders()
 
 @pytest.fixture(scope="session")
 def localstack_ready():
