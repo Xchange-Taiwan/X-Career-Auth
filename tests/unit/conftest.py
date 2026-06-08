@@ -1,10 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from src.domain.auth.model.auth_entity import AccountEntity
-from src.domain.calendar.service.calendar_service import CalendarService
-
 def make_account(email=None):
+    from src.domain.auth.model.auth_entity import AccountEntity
     return AccountEntity(email=email)
 
 @pytest.fixture
@@ -22,6 +20,7 @@ def mock_auth_repo():
 
 @pytest.fixture
 def calendar_service(mock_calendar_client, mock_auth_repo):
+    from src.domain.calendar.service.calendar_service import CalendarService
     return CalendarService(
         calendar_client=mock_calendar_client,
         auth_repo=mock_auth_repo
