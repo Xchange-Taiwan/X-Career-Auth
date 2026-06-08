@@ -53,6 +53,26 @@ def test_signup_duplicate_email(client, registered_account):
     assert body["code"] == "50000"
     assert "already registered" in body["msg"]
 
+def test_signup_response_serializes_account_vo(client, unique_email):
+    # 升級守門:AccountVO 的 use_enum_values + Field(default) 序列化(account_type enum→字串 "XC")
+    # 是 pydantic v1→v2 已知會漂移的點,且為對外 API 契約。鎖住回應的完整欄位形狀。
+    response = client.post(
+        "/auth-service/api/v1/signup",
+        json={
+            "region": "TW",
+            "email": unique_email,
+            "password": "Password123!"
+        }
+    )
+
+    assert response.status_code == 201
+    data = response.json()["data"]
+    assert data["email"] == unique_email
+    assert data["account_type"] == "XC"   # 必須是字串值,非 enum 物件 / "AccountType.XC"
+    assert data["region"] == "TW"
+    assert isinstance(data["aid"], int)
+    assert isinstance(data["user_id"], int)
+
 def test_signup_invalid_email(client):
     response = client.post(
         "/auth-service/api/v1/signup",
@@ -68,4 +88,50 @@ def test_signup_invalid_email(client):
     assert response.status_code == 422
     body = response.json()
     assert "detail" in body
+    assert any("email" in str(err.get("loc", [])) for err in body["detail"])
+
+
+# --- 必填欄位缺失 → 422(NewAccountDTO: region / email / password 皆必填)-----
+# 升級守門:缺必填欄位應擋在 pydantic 請求驗證層(不進 service/DynamoDB)。
+# 只斷言 status_code 與 loc 指向的欄位(v1/v2 穩定);不斷言 msg/type 文字(會漂移)。
+
+def test_signup_missing_password_returns_422(client, unique_email):
+    response = client.post(
+        "/auth-service/api/v1/signup",
+        json={
+            "region": "TW",
+            "email": unique_email,
+        }
+    )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert any("password" in str(err.get("loc", [])) for err in body["detail"])
+
+
+def test_signup_missing_region_returns_422(client, unique_email):
+    response = client.post(
+        "/auth-service/api/v1/signup",
+        json={
+            "email": unique_email,
+            "password": "Password123!",
+        }
+    )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert any("region" in str(err.get("loc", [])) for err in body["detail"])
+
+
+def test_signup_missing_email_returns_422(client):
+    response = client.post(
+        "/auth-service/api/v1/signup",
+        json={
+            "region": "TW",
+            "password": "Password123!",
+        }
+    )
+
+    assert response.status_code == 422
+    body = response.json()
     assert any("email" in str(err.get("loc", [])) for err in body["detail"])
