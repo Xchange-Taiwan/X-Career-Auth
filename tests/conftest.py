@@ -5,6 +5,13 @@ from fastapi.testclient import TestClient
 import uuid
 from unittest.mock import AsyncMock
 
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "requires_postgres: mark test as requiring a running Postgres database (skipped when TEST_POSTGRES_URL is not set)",
+    )
+
 @pytest.fixture(scope="session")
 def localstack_ready():
     url = "http://localhost:4566/_localstack/health"
