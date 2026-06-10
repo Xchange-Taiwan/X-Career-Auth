@@ -12,6 +12,7 @@ from ....config.conf import (
     AUTO_COMMIT,
     AUTO_FLUSH,
     PSQL_TENANT_NAMESPACES,
+    DB_SSL,
 )
 import logging
 
@@ -23,6 +24,8 @@ connect_args = {
         'search_path': PSQL_TENANT_NAMESPACES,
     }
 }
+if DB_SSL:
+    connect_args['ssl'] = DB_SSL
 
 
 class SQLResourceHandler(ResourceHandler):

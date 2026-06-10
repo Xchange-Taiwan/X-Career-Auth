@@ -13,3 +13,5 @@ def init_logging():
     root_logger.setLevel(logging.INFO)
 
     root_logger.info("Logging initialized (root level=INFO)")
+
+    return root_logger

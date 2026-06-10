@@ -50,26 +50,30 @@ class AuthService:
             account_entity = await self.auth_repo.find_account_by_email(
                 db=db, email=data.email, fields=["email", "region"]
             )
-
-            # email sending
-            if not data.exist:
-                if account_entity is None:
-                    await self.email_client.send_conform_code(
-                        email=data.email, confirm_code=data.code
-                    )
-                    return "email_sent"
-                raise DuplicateUserException(msg="Email registered")
-            else:
-                if account_entity != None:
-                    await self.email_client.send_conform_code(
-                        email=data.email, confirm_code=data.code
-                    )
-                    return "email_sent"
-                raise NotFoundException(msg="Email not found")
-
         except Exception as e:
             log.error(
-                f"{self.cls_name}.send_code_by_email [database OR email sending error] data: %s, account_entity: %s, err: %s",
+                f"{self.cls_name}.send_code_by_email [database error] data: %s, err: %s",
+                data,
+                e.__str__(),
+            )
+            err_msg = getattr(e, "msg", "Unable to access database")
+            raise_http_exception(e=e, msg=err_msg)
+
+        if not data.exist:
+            if account_entity is not None:
+                raise DuplicateUserException(msg="Email registered")
+        else:
+            if account_entity is None:
+                raise NotFoundException(msg="Email not found")
+
+        try:
+            await self.email_client.send_conform_code(
+                email=data.email, confirm_code=data.code
+            )
+            return "email_sent"
+        except Exception as e:
+            log.error(
+                f"{self.cls_name}.send_code_by_email [email sending error] data: %s, account_entity: %s, err: %s",
                 data,
                 account_entity,
                 e.__str__(),
@@ -86,37 +90,42 @@ class AuthService:
         # entity = db schema
         account_entity: AccountEntity = None
         token: str = None
+        
         try:
             account_entity = await self.auth_repo.find_account_by_email(
                 db=db, email=data.email, fields=["email", "region"]
             )
-
-            # email sending
-            token: str = str(uuid.uuid4())
-            if not data.exist:
-                if account_entity is None:
-                    await self.email_client.send_signup_confirm_email(
-                        email=data.email, token=token
-                    )
-                else:
-                    raise DuplicateUserException(msg="Email registered")
-            else:
-                if account_entity != None:
-                    await self.email_client.send_signup_confirm_email(
-                        email=data.email, token=token
-                    )
-                else:
-                    raise NotFoundException(msg="Email not found")
-
         except Exception as e:
             log.error(
-                f"{self.cls_name}.send_link_by_email [database OR email sending error] data: %s, account_entity: %s, err: %s",
+                f"{self.cls_name}.send_link_by_email [database error] data: %s, err: %s",
+                data,
+                e.__str__(),
+            )
+            err_msg = getattr(e, "msg", "Unable to access database")
+            raise_http_exception(e=e, msg=err_msg)
+
+        token = str(uuid.uuid4())
+        if not data.exist:
+            if account_entity is not None:
+                raise DuplicateUserException(msg="Email registered")
+        else:
+            if account_entity is None:
+                raise NotFoundException(msg="Email not found")
+
+        try:
+            await self.email_client.send_signup_confirm_email(
+                email=data.email, token=token
+            )
+        except Exception as e:
+            log.error(
+                f"{self.cls_name}.send_link_by_email [email sending error] data: %s, account_entity: %s, err: %s",
                 data,
                 account_entity,
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to send link by email")
             raise_http_exception(e=e, msg=err_msg)
+            
         return {"token": token}
 
 
