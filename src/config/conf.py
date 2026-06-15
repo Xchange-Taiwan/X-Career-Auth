@@ -7,13 +7,13 @@ PROBE_CYCLE_SECS = int(os.getenv('PROBE_CYCLE_SECS', 3))
 
 # database conf
 # dynamodb
-DDB_TABLE_ACCOUNTS = os.getenv('DYNAMODB_TABLE_ACCOUNTS', 'dev_x_career_auth_accounts')
+DDB_TABLE_ACCOUNTS = os.getenv('DYNAMODB_TABLE_ACCOUNTS', 'xxxx')
 
 # postgres
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
 DB_URL = os.getenv(
-    'DB_URL', 'postgresql+asyncpg://kao:password@localhost:5432/postgres'
+    'DB_URL', 'postgresql+asyncpg://acc:pass@localhost:5432/postgres'
 )
 POOL_PRE_PING = bool(int(os.getenv('POOL_PRE_PING', '1')))  # 檢查連線狀態
 POOL_RECYCLE = int(os.getenv('POOL_RECYCLE', 300))  # 定期重置連線
@@ -27,12 +27,12 @@ DB_SSL = os.getenv('DB_SSL', '')  # AWS 上設 'require'，空字串為本機不
 
 # postgres 為多租戶設計的機制，透過 schema 來區分不同租戶的資料
 PSQL_TENANT_NAMESPACES = os.getenv(
-    'PSQL_TENANT_NAMESPACES', 'x-career-dev,public')  # public x-career-dev
+    'PSQL_TENANT_NAMESPACES', 'xxxx')  # public x-career-dev
 
 
 # email conf
 SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
-EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'testing_visitor@xchange.com.tw')
+EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'xxxx')
 # 前端連結：{FRONTEND_HOSTNAME}{FRONTEND_URL_PATH_*}?{FRONTEND_TOKEN}={token}
 FRONTEND_HOSTNAME = os.getenv('FRONTEND_HOSTNAME', 'http://localhost:8002')
 FRONTEND_URL_PATH_EMAIL_VERIFIED = os.getenv(
@@ -45,5 +45,5 @@ SES_READ_TIMEOUT = int(os.getenv('SES_READ_TIMEOUT', 10))
 SES_MAX_ATTEMPTS = int(os.getenv('SES_MAX_ATTEMPTS', 3))
 
 # google calendar conf
-GOOGLE_CALENDAR_TOKEN = os.getenv('GOOGLE_CALENDAR_TOKEN', None)
-GOOGLE_CALENDAR_ID = os.getenv('GOOGLE_CALENDAR_ID', 'primary')
+GOOGLE_CALENDAR_TOKEN = os.getenv('GOOGLE_CALENDAR_TOKEN', 'xxxx')
+GOOGLE_CALENDAR_ID = os.getenv('GOOGLE_CALENDAR_ID', 'xxxx')

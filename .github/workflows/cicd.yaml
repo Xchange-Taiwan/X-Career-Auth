@@ -1,17 +1,17 @@
-# dev 分支推送時部署至 AWS Lambda（Serverless Framework）
+# main 分支推送時部署至 AWS Lambda（Serverless Framework）
 # 部署後的 Lambda 環境變數對齊 dev-env-deploy.sh
+# GitHub Repository secrets 請使用  結尾命名（見檔內 secrets.*）
 name: X-Career-Auth Pipeline
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: dev
 
     steps:
       - name: Checkout repository
@@ -43,9 +43,9 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to AWS Lambda
-        run: npx sls deploy --stage dev --region ${{ secrets.AWS_REGION }}
+        run: npx sls deploy --stage prod --region ${{ secrets.AWS_REGION }}
         env:
-          STAGE: dev
+          STAGE: prod
           THE_REGION: ${{ secrets.AWS_REGION }}
           ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           DYNAMODB_TABLE_ACCOUNTS: ${{ secrets.DYNAMODB_TABLE_ACCOUNTS }}
@@ -77,10 +77,10 @@ jobs:
             --arg DB_USER "$DB_USER" \
             --arg PSQL_TENANT_NAMESPACES "$PSQL_TENANT_NAMESPACES" \
             '{
-              FunctionName: "x-career-auth-dev-app",
+              FunctionName: "x-career-auth-prod-app",
               Environment: {
                 Variables: {
-                  STAGE: "dev",
+                  STAGE: "prod",
                   PROBE_CYCLE_SECS: "3",
                   DYNAMODB_TABLE_ACCOUNTS: $DYNAMODB_TABLE_ACCOUNTS,
                   BATCH_LIMIT: "20",
