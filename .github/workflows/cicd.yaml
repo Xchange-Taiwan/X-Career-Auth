@@ -57,13 +57,13 @@ jobs:
           GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
           GOOGLE_CALENDAR_TOKEN: ${{ secrets.GOOGLE_CALENDAR_TOKEN }}
           FRONTEND_HOSTNAME: ${{ secrets.FRONTEND_HOSTNAME }}
-          DB_URL: ${{ secrets.DB_URL }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           PSQL_TENANT_NAMESPACES: ${{ secrets.PSQL_TENANT_NAMESPACES }}
         run: |
+          DB_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}"
           jq -n \
             --arg DYNAMODB_TABLE_ACCOUNTS "$DYNAMODB_TABLE_ACCOUNTS" \
             --arg EMAIL_SENDER "$EMAIL_SENDER" \
