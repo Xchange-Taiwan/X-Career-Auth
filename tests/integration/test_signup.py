@@ -14,7 +14,8 @@ def test_signup_success(client, unique_email):
     assert body["msg"] == "ok"
     assert body["data"]["email"] == unique_email
 
-def test_signup_creates_dynamodb_item(client, unique_email, dynamodb_table):
+def test_signup_creates_postgres_row(client, unique_email, fetch_account):
+    # 遷移後資料寫入 PostgreSQL：驗證 signup 後 accounts 表確實有對應 row
     response = client.post(
         "/auth-service/api/v1/signup",
         json={
@@ -27,12 +28,37 @@ def test_signup_creates_dynamodb_item(client, unique_email, dynamodb_table):
     assert response.status_code == 201
     assert response.json()["code"] == "0"
 
-    result = dynamodb_table.get_item(Key={"email": unique_email})
-    item = result.get("Item")
+    row = fetch_account(unique_email)
 
-    assert item is not None
-    assert item["email"] == unique_email
-    assert item["account_type"] == "XC"
+    assert row is not None
+    assert row["email"] == unique_email
+    assert row["account_type"] == "XC"
+    assert row["region"] == "TW"
+
+
+def test_signup_postgres_row_data_format(client, unique_email, fetch_account):
+    response = client.post(
+        "/auth-service/api/v1/signup",
+        json={
+            "region": "TW",
+            "email": unique_email,
+            "password": "Password123!"
+        }
+    )
+
+    assert response.status_code == 201
+
+    row = fetch_account(unique_email)
+    assert row is not None
+    assert isinstance(row["aid"], int)
+    assert isinstance(row["user_id"], int)
+    assert isinstance(row["pass_hash"], str)
+    assert isinstance(row["pass_salt"], str)
+    assert row["account_type"] == "XC"
+    assert row["is_active"] is True
+    assert row["oauth_id"] in ("", None)
+    assert isinstance(row["created_at"], int)
+    assert isinstance(row["updated_at"], int)
 
 def test_signup_duplicate_email(client, registered_account):
     # 打2次 /signup
@@ -92,7 +118,7 @@ def test_signup_invalid_email(client):
 
 
 # --- 必填欄位缺失 → 422(NewAccountDTO: region / email / password 皆必填)-----
-# 升級守門:缺必填欄位應擋在 pydantic 請求驗證層(不進 service/DynamoDB)。
+# 升級守門:缺必填欄位應擋在 pydantic 請求驗證層(不進 service/DB)。
 # 只斷言 status_code 與 loc 指向的欄位(v1/v2 穩定);不斷言 msg/type 文字(會漂移)。
 
 def test_signup_missing_password_returns_422(client, unique_email):
