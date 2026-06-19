@@ -43,8 +43,12 @@ Copy `.env.example` to `.env` and fill in the values below.
 | `STAGE` | — | Deployment stage (`dev` / `prod`) |
 | `THE_REGION` | `ap-northeast-1` | AWS region |
 | `ACCOUNT_ID` | — | AWS account ID (12 digits) |
-| `DB_URL` | `postgresql+asyncpg://kao:password@localhost:5432/postgres` | PostgreSQL connection string |
-| `PSQL_TENANT_NAMESPACES` | `x-career-dev,public` | Database schemas (comma-separated) |
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_NAME` | `postgres` | PostgreSQL database name |
+| `DB_USER` | `user` | PostgreSQL user |
+| `DB_PASSWORD` | `pass` | PostgreSQL password |
+| `DB_SCHEMA` | `public` | PostgreSQL schema |
 | `DYNAMODB_TABLE_ACCOUNTS` | `dev_x_career_auth_accounts` | DynamoDB table name |
 | `SITE_TITLE` | `X-Career` | Site title used in email subjects |
 | `FRONTEND_HOSTNAME` | `http://localhost:8002` | Frontend base URL |
@@ -60,8 +64,12 @@ For basic local testing without email or OAuth, set at minimum:
 ```env
 STAGE=dev
 THE_REGION=ap-northeast-1
-DB_URL=postgresql+asyncpg://<user>:<password>@localhost:5432/<dbname>
-PSQL_TENANT_NAMESPACES=public
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=user
+DB_PASSWORD=pass
+DB_SCHEMA=public
 DYNAMODB_TABLE_ACCOUNTS=dev_x_career_auth_accounts
 FRONTEND_HOSTNAME=http://localhost:3000
 ```

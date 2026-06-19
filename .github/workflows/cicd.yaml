@@ -1,6 +1,5 @@
 # main 分支推送時部署至 AWS Lambda（Serverless Framework）
 # 部署後的 Lambda 環境變數對齊 dev-env-deploy.sh
-# GitHub Repository secrets 請使用  結尾命名（見檔內 secrets.*）
 name: X-Career-Auth Pipeline
 
 on:
@@ -57,25 +56,25 @@ jobs:
           GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
           GOOGLE_CALENDAR_TOKEN: ${{ secrets.GOOGLE_CALENDAR_TOKEN }}
           FRONTEND_HOSTNAME: ${{ secrets.FRONTEND_HOSTNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
-          PSQL_TENANT_NAMESPACES: ${{ secrets.PSQL_TENANT_NAMESPACES }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
         run: |
-          DB_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}"
           jq -n \
             --arg DYNAMODB_TABLE_ACCOUNTS "$DYNAMODB_TABLE_ACCOUNTS" \
             --arg EMAIL_SENDER "$EMAIL_SENDER" \
             --arg GOOGLE_CALENDAR_ID "$GOOGLE_CALENDAR_ID" \
             --arg GOOGLE_CALENDAR_TOKEN "$GOOGLE_CALENDAR_TOKEN" \
             --arg FRONTEND_HOSTNAME "$FRONTEND_HOSTNAME" \
-            --arg DB_URL "$DB_URL" \
-            --arg DB_PASSWORD "$DB_PASSWORD" \
             --arg DB_HOST "$DB_HOST" \
+            --arg DB_PORT "$DB_PORT" \
             --arg DB_NAME "$DB_NAME" \
             --arg DB_USER "$DB_USER" \
-            --arg PSQL_TENANT_NAMESPACES "$PSQL_TENANT_NAMESPACES" \
+            --arg DB_PASSWORD "$DB_PASSWORD" \
+            --arg DB_SCHEMA "$DB_SCHEMA" \
             '{
               FunctionName: "x-career-auth-prod-app",
               Environment: {
@@ -84,15 +83,15 @@ jobs:
                   PROBE_CYCLE_SECS: "3",
                   DYNAMODB_TABLE_ACCOUNTS: $DYNAMODB_TABLE_ACCOUNTS,
                   BATCH_LIMIT: "20",
-                  DB_URL: $DB_URL,
                   DB_SSL: "require",
+                  DB_PORT: $DB_PORT,
                   POOL_PRE_PING: "1",
                   POOL_RECYCLE: "300",
                   POOL_SIZE: "10",
                   MAX_OVERFLOW: "20",
                   AUTO_COMMIT: "0",
                   AUTO_FLUSH: "0",
-                  PSQL_TENANT_NAMESPACES: $PSQL_TENANT_NAMESPACES,
+                  DB_SCHEMA: $DB_SCHEMA,
                   SITE_TITLE: "X-Career",
                   EMAIL_SENDER: $EMAIL_SENDER,
                   FRONTEND_HOSTNAME: $FRONTEND_HOSTNAME,

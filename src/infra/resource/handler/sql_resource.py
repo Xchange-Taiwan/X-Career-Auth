@@ -4,28 +4,50 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 from ._resource import ResourceHandler
 from ....config.conf import (
-    DB_URL,
+    DB_HOST,
+    DB_PORT,
+    DB_USER,
+    DB_PASSWORD,
+    DB_NAME,
     POOL_PRE_PING,
     POOL_RECYCLE,
     POOL_SIZE,
     MAX_OVERFLOW,
     AUTO_COMMIT,
     AUTO_FLUSH,
-    PSQL_TENANT_NAMESPACES,
+    DB_SCHEMA,
     DB_SSL,
 )
 import logging
 
 log = logging.getLogger(__name__)
 
+DATABASE_URL = (
+    f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}'
+    f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+)
+schema_translate_map = {"schema": DB_SCHEMA}
 
-connect_args = {
-    'server_settings': {
-        'search_path': PSQL_TENANT_NAMESPACES,
-    }
-}
+server_settings = {}
+if DB_SCHEMA:
+    server_settings['search_path'] = f'"{DB_SCHEMA}", public'
+
+connect_args = {'server_settings': server_settings}
 if DB_SSL:
     connect_args['ssl'] = DB_SSL
+
+
+def _create_database_engine():
+    return create_async_engine(
+        DATABASE_URL,
+        execution_options={
+            "schema_translate_map": schema_translate_map
+        },
+        connect_args=connect_args,
+        pool_pre_ping=POOL_PRE_PING,
+        pool_size=POOL_SIZE,
+        max_overflow=MAX_OVERFLOW,
+    )
 
 
 class SQLResourceHandler(ResourceHandler):
@@ -44,12 +66,7 @@ class SQLResourceHandler(ResourceHandler):
                 if self.engine is not None:
                     await self.engine.dispose()
 
-                self.engine = create_async_engine(
-                    DB_URL,
-                    connect_args=connect_args,
-                    pool_pre_ping=POOL_PRE_PING,
-                    pool_size=POOL_SIZE,
-                    max_overflow=MAX_OVERFLOW)
+                self.engine = _create_database_engine()
                 log.info('DB[SQL] Connection pool established.')
 
                 self.session = sessionmaker(
@@ -68,12 +85,7 @@ class SQLResourceHandler(ResourceHandler):
                 if self.engine is not None:
                     await self.engine.dispose()
 
-                self.engine = create_async_engine(
-                    DB_URL,
-                    connect_args=connect_args,
-                    pool_pre_ping=POOL_PRE_PING,
-                    pool_size=POOL_SIZE,
-                    max_overflow=MAX_OVERFLOW)
+                self.engine = _create_database_engine()
                 log.info('DB[SQL] Connection pool established.')
 
                 self.session = sessionmaker(

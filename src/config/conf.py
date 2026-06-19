@@ -12,9 +12,12 @@ DDB_TABLE_ACCOUNTS = os.getenv('DYNAMODB_TABLE_ACCOUNTS', 'xxxx')
 # postgres
 # TODO: connection conf..
 BATCH_LIMIT = int(os.getenv('BATCH_LIMIT', '20'))
-DB_URL = os.getenv(
-    'DB_URL', 'postgresql+asyncpg://acc:pass@localhost:5432/postgres'
-)
+DB_HOST = os.getenv('DB_HOST', 'localhost').strip()
+DB_PORT = os.getenv('DB_PORT', '5432').strip()
+DB_USER = os.getenv('DB_USER', 'user').strip()
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'pass').strip()
+DB_NAME = os.getenv('DB_NAME', 'postgres').strip()
+DB_SCHEMA = os.getenv('DB_SCHEMA', 'public').strip()
 POOL_PRE_PING = bool(int(os.getenv('POOL_PRE_PING', '1')))  # 檢查連線狀態
 POOL_RECYCLE = int(os.getenv('POOL_RECYCLE', 300))  # 定期重置連線
 POOL_SIZE = int(os.getenv('POOL_SIZE', 10))         # 連線池大小
@@ -23,12 +26,7 @@ AUTO_COMMIT = bool(int(os.getenv('AUTO_COMMIT', '0')))  # 自動提交
 AUTO_FLUSH = bool(int(os.getenv('AUTO_FLUSH', '0')))    # 自動刷新
 # asyncpg ssl 模式: disable / allow / prefer / require / verify-ca / verify-full
 # RDS 預設要求加密 (rds.force_ssl)，明文連線會被 pg_hba 以 "no encryption" 拒絕
-DB_SSL = os.getenv('DB_SSL', '')  # AWS 上設 'require'，空字串為本機不加密
-
-# postgres 為多租戶設計的機制，透過 schema 來區分不同租戶的資料
-PSQL_TENANT_NAMESPACES = os.getenv(
-    'PSQL_TENANT_NAMESPACES', 'xxxx')  # public x-career-dev
-
+DB_SSL = os.getenv('DB_SSL', '').strip()  # AWS 上設 'require'，空字串為本機不加密
 
 # email conf
 SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
