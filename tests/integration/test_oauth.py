@@ -1,10 +1,11 @@
-def test_oauth_signup_success(client, unique_email):
+def test_oauth_signup_success(client, unique_email, fetch_account):
+    oauth_id = "google-oauth-abc123"
     response = client.post(
         "/auth-service/api/v1/signup/oauth/GOOGLE",
         json={
             "region": "TW",
             "email": unique_email,
-            "oauth_id": "google-oauth-abc123"
+            "oauth_id": oauth_id
         }
     )
 
@@ -13,7 +14,16 @@ def test_oauth_signup_success(client, unique_email):
     assert body["code"] == "0"
     assert body["msg"] == "ok"
     assert body["data"]["account_type"] == "GOOGLE"
-    assert body["data"]["oauth_id"] == "google-oauth-abc123"
+    assert body["data"]["oauth_id"] == oauth_id
+
+    row = fetch_account(unique_email)
+    assert row is not None
+    assert row["account_type"] == "GOOGLE"
+    assert row["oauth_id"] == oauth_id
+    assert row["pass_hash"] == ""
+    assert row["pass_salt"] == ""
+    assert isinstance(row["aid"], int)
+    assert isinstance(row["user_id"], int)
 
 def test_oauth_signup_duplicate_email(client, registered_oauth_account):
     email, oauth_id = registered_oauth_account

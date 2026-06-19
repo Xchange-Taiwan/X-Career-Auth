@@ -1,5 +1,7 @@
-def test_delete_account_success(client, registered_account, dynamodb_table):
+def test_delete_account_success(client, registered_account, fetch_account):
     email, password = registered_account
+    assert fetch_account(email) is not None
+
     response = client.delete(
         "/auth-service/api/v1/accounts",
         json={
@@ -12,9 +14,8 @@ def test_delete_account_success(client, registered_account, dynamodb_table):
     assert body["code"] == "0"
     assert body["msg"] == "deleted"
 
-    # 驗證 account 真的被刪除
-    result = dynamodb_table.get_item(Key={"email": email})
-    assert result.get("Item") is None
+    # 驗證 account 真的從 PostgreSQL 被刪除
+    assert fetch_account(email) is None
 
 def test_delete_account_not_found(client):
     # NOTE: 刪除不存在帳號回 200(冪等刪除設計)— auth_service.delete_account 在帳號不存在時 silently 回 0,

@@ -5,7 +5,7 @@ from fastapi import (
     Body
 )
 from ...domain.calendar.model.calendar_model import CalendarEventDTO
-from ...app.adapter import _calendar_service, ddb_session
+from ...app.adapter import _calendar_service, db_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..res.response import *
 import logging
@@ -21,7 +21,7 @@ router = APIRouter(
 @router.post('/events', status_code=status.HTTP_201_CREATED)
 async def send_calendar_event(
     payload: CalendarEventDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     res = await _calendar_service.send_calendar_invite(
         db=db,
