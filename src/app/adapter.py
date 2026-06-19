@@ -3,7 +3,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..infra.resource.handler import *
 from ..infra.resource.manager import IOResourceManager
 from ..infra.db.sql.repo.auth_repository import AuthRepository
-from ..infra.db.nosql.repo.dynamodb_auth_repository import DynamoDBAuthRepository
 from ..infra.client.email import EmailClient
 from ..infra.client.async_service_api_adapter import AsyncServiceApiAdapter
 from ..infra.client.calendar import CalendarClient
@@ -19,27 +18,15 @@ from ..domain.calendar.service.calendar_service import CalendarService
 session = aioboto3.Session()
 io_resource_manager = IOResourceManager(resources={
     'sql': SQLResourceHandler(),
-    'dynamodb': NoSQLResourceHandler(session),
     'ses': SESResourceHandler(session),
 })
 
 sql_rsc = io_resource_manager.get('sql')
-dynamodb_rsc = io_resource_manager.get('dynamodb')
 email_rec = io_resource_manager.get('ses')
 
 ################################################################
 # connection manager for db, cache, message queue ... etc ?
 ################################################################
-
-# dynamodb session
-async def ddb_session():
-    dynamodb_resource = await dynamodb_rsc.access()
-    async with dynamodb_resource as ddb_resource:
-        try:
-            yield ddb_resource
-        except Exception as e:
-            raise
-
 
 # session with "manual" commit/rollback
 async def db_session():
@@ -92,7 +79,6 @@ email_client = EmailClient(ses=email_rec, mail_template_cache_factory=init_mail_
 http_request = AsyncServiceApiAdapter()
 calendar_client = CalendarClient()
 auth_repo = AuthRepository()
-ddb_auth_repo = DynamoDBAuthRepository()
 
 
 ##############################
@@ -100,16 +86,16 @@ ddb_auth_repo = DynamoDBAuthRepository()
 ##############################
 
 _auth_service = AuthService(
-    auth_repo=ddb_auth_repo,
+    auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,
 )
 _oauth_service = OauthService(
-    auth_repo=ddb_auth_repo,
+    auth_repo=auth_repo,
     email_client=email_client,
     http_request=http_request,
 )
 _calendar_service = CalendarService(
-    calendar_client=calendar_client, 
-    auth_repo=ddb_auth_repo
+    calendar_client=calendar_client,
+    auth_repo=auth_repo
 )

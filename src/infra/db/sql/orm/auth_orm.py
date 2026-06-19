@@ -3,13 +3,9 @@ from sqlalchemy import (
     Column,
     BigInteger,
     String,
-    ForeignKey,
     Boolean,
 )
-from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.declarative import declarative_base
-from enum import Enum
-from .....config.constant import AccountType
 
 Base = declarative_base()
 
@@ -49,9 +45,7 @@ class Account(Base):
     oauth_id = Column(String(255))  # 避免對空字串或 NULL 建立索引
     refresh_token = Column(String(255))
     user_id = Column(BigInteger, unique=True)
-    account_type = Column(
-        ENUM(AccountType, name="account_type", create_type=False), nullable=False
-    )
+    account_type = Column(String(50), nullable=False)
     is_active = Column(Boolean)
     region = Column(String(50))
     created_at = Column(BigInteger, default=lambda: int(time.time()))

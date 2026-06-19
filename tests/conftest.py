@@ -1,5 +1,4 @@
 import pytest
-import httpx
 import os
 from fastapi.testclient import TestClient
 import uuid
@@ -13,16 +12,6 @@ def pytest_configure(config):
     )
 
 @pytest.fixture(scope="session")
-def localstack_ready():
-    url = "http://localhost:4566/_localstack/health"
-    try:
-        response = httpx.get(url, timeout=3)
-        if response.status_code != 200:
-            pytest.fail(f"Service not healthy: {response.status_code}")
-    except httpx.ConnectError:
-        pytest.fail("Cannot connect to service")
-
-@pytest.fixture(scope="session")
 def app():
     os.environ["AWS_ENDPOINT_URL"] = "http://localhost:4566"
     os.environ["AWS_DEFAULT_REGION"] = "ap-northeast-1"
@@ -34,19 +23,8 @@ def app():
 
 @pytest.fixture(scope="session")
 def client(app):
-    return TestClient(app, raise_server_exceptions=False)
-
-@pytest.fixture(scope="session")
-def dynamodb_table():
-    import boto3
-    dynamodb = boto3.resource(
-        "dynamodb",
-        region_name="ap-northeast-1",
-        endpoint_url="http://localhost:4566",
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
-    )
-    return dynamodb.Table("dev_x_career_auth_accounts")
+    with TestClient(app, raise_server_exceptions=False) as test_client:
+        yield test_client
 
 @pytest.fixture # default 就是 function scope
 def unique_email():
@@ -54,7 +32,8 @@ def unique_email():
 
 @pytest.fixture
 def registered_oauth_account(client, unique_email):
-    oauth_id = "fake-google-oauth-id-12345"
+    # oauth_id 由 unique_email 衍生，確保每個帳號唯一，符合 PostgreSQL 的 oauth_id 唯一約束
+    oauth_id = f"google-oauth-{unique_email}"
     client.post(
         "/auth-service/api/v1/signup/oauth/GOOGLE",
         json={

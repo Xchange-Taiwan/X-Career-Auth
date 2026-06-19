@@ -18,6 +18,11 @@ class AuthRepository(IAuthRepository):
     def __init__(self):
         self.cls_name = self.__class__.__name__
 
+    def _entity_from_fields(self, row) -> Optional[AccountEntity]:
+        if row is None:
+            return None
+        return AccountEntity(**dict(row))
+
     async def find_account_by_email(self, db: AsyncSession, email: EmailStr, fields: List = ['*']) -> (Optional[AccountEntity]):
         try:
             if fields == ['*']:
@@ -28,14 +33,13 @@ class AuthRepository(IAuthRepository):
                                  for field in fields]).where(Account.email == email)
 
             result = await db.execute(query)
-            account = result.scalar_one_or_none()
-            if account is None:
-                return None
-
             if fields == ['*']:
+                account = result.scalar_one_or_none()
+                if account is None:
+                    return None
                 return AccountEntity.from_orm(account)
             else:
-                return account
+                return self._entity_from_fields(result.mappings().one_or_none())
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_email: %s',
                       self.cls_name, e)
@@ -68,14 +72,13 @@ class AuthRepository(IAuthRepository):
                                  for field in fields]).where(Account.oauth_id == oauth_id)
 
             result = await db.execute(query)
-            account = result.scalar_one_or_none()
-            if account is None:
-                return None
-
             if fields == ['*']:
+                account = result.scalar_one_or_none()
+                if account is None:
+                    return None
                 return AccountEntity.from_orm(account)
             else:
-                return account
+                return self._entity_from_fields(result.mappings().one_or_none())
         except SQLAlchemyError as e:
             log.error(f'Error in %s.find_account_by_oauth_id: %s',
                       self.cls_name, e)
