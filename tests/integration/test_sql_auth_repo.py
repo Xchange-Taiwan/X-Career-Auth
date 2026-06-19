@@ -3,7 +3,7 @@
 目標是 DB 切換到 PostgreSQL 後使用的 AuthRepository。
 直接對 repository 方法測（非經 HTTP），讓問題能定位在 repo 層而非整條 HTTP。
 
-schema（accounts 表 + account_type enum）由 sql_session fixture 依 ORM 自建，
+schema（accounts 表）由 sql_session fixture 依 ORM 自建，
 每個測試拿到一張乾淨的空表，測完整個拆掉（見 tests/integration/conftest.py）。
 postgres 不可用時自動 skip。
 """
@@ -55,7 +55,7 @@ async def test_create_and_find_by_email(sql_session, repo, created_account):
     assert found is not None
     assert found.email == created_account.email
     assert found.region == "TW"
-    assert found.account_type == AccountType.XC   # enum 正確 round-trip
+    assert found.account_type == AccountType.XC
     assert isinstance(found.aid, int)
     assert isinstance(found.user_id, int)
 

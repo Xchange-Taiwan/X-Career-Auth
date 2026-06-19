@@ -12,9 +12,7 @@ legacy account store 的「有效 schema」= repository 實際寫入的欄位集
 tests/integration/test_sql_schema_parity.py。
 """
 from sqlalchemy import BigInteger, Boolean, String
-from sqlalchemy.dialects.postgresql import ENUM
 
-from src.config.constant import AccountType
 from src.domain.auth.model.auth_entity import AccountEntity
 from src.infra.db.sql.orm.auth_orm import Account
 
@@ -104,6 +102,7 @@ def test_string_columns_types_and_lengths():
         "pass_salt": 60,
         "oauth_id": 255,
         "refresh_token": 255,
+        "account_type": 50,
         "region": 50,
     }
     for name, length in expected.items():
@@ -116,9 +115,8 @@ def test_is_active_is_boolean():
     assert isinstance(_cols()["is_active"].type, Boolean)
 
 
-def test_account_type_is_enum_with_expected_values():
-    """account_type 對應 postgres ENUM，且列舉值與 AccountType 一致。"""
+def test_account_type_is_string():
+    """account_type 不在資料欄位宣告 enum；有效值由程式層 AccountType 控制。"""
     col_type = _cols()["account_type"].type
-    assert isinstance(col_type, ENUM)
-    assert col_type.name == "account_type"
-    assert set(col_type.enums) == {e.value for e in AccountType}
+    assert isinstance(col_type, String)
+    assert col_type.length == 50

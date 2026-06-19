@@ -80,7 +80,7 @@ def test_signup_duplicate_email(client, registered_account):
     assert "already registered" in body["msg"]
 
 def test_signup_response_serializes_account_vo(client, unique_email):
-    # 升級守門:AccountVO 的 use_enum_values + Field(default) 序列化(account_type enum→字串 "XC")
+    # 升級守門:AccountVO 的 use_enum_values + Field(default) 序列化(AccountType → 字串 "XC")
     # 是 pydantic v1→v2 已知會漂移的點,且為對外 API 契約。鎖住回應的完整欄位形狀。
     response = client.post(
         "/auth-service/api/v1/signup",

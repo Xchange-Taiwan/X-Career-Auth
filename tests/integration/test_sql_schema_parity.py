@@ -1,18 +1,17 @@
 """Schema parity 整合測試（真打 postgres，introspection）。
 
 對「實際的 postgres accounts 表」做 introspection（information_schema / pg_catalog），
-驗證 live DB 的欄位、型別、約束、enum 標籤與 ORM 定義一致——也就是確認
+驗證 live DB 的欄位、型別與約束與 ORM 定義一致——也就是確認
 PostgreSQL accounts 表真的和 account domain model 的持久化資料對得上。
 
 注意：accounts 表由 sql_session fixture 依 ORM 自建（見 conftest.py）。因此本檔驗證的是
-「ORM 定義能在真實 postgres 正確落地成預期 schema」。實際部署用的 auth_init.sql 另有
-已知問題（見本次交付報告），不在此測試範圍。
+「ORM 定義能在真實 postgres 正確落地成預期 schema」。實際部署用的 auth_init.sql
+由 SQL init 檔自身維護。
 postgres 不可用時自動 skip。
 """
 import pytest
 from sqlalchemy import text
 
-from src.config.constant import AccountType
 from src.infra.db.sql.orm.auth_orm import Account
 
 pytestmark = pytest.mark.requires_postgres
@@ -29,7 +28,7 @@ EXPECTED_COLUMNS = {
     "oauth_id": ("character varying", 255),
     "refresh_token": ("character varying", 255),
     "user_id": ("bigint", None),
-    "account_type": ("USER-DEFINED", None),   # postgres ENUM
+    "account_type": ("character varying", 50),
     "is_active": ("boolean", None),
     "region": ("character varying", 50),
     "created_at": ("bigint", None),
@@ -98,25 +97,11 @@ async def test_column_data_types(sql_session):
             )
 
 
-async def test_account_type_is_enum_udt(sql_session):
+async def test_account_type_is_varchar(sql_session):
     cols = await _fetch_columns(sql_session)
     account_type = cols["account_type"]
-    assert account_type["data_type"] == "USER-DEFINED"
-    assert account_type["udt_name"] == "account_type"
-
-
-async def test_enum_labels_match_account_type(sql_session):
-    """postgres account_type enum 的標籤，必須與程式的 AccountType 一致。"""
-    result = await sql_session.execute(text(
-        """
-        SELECT e.enumlabel AS label
-        FROM pg_type t
-        JOIN pg_enum e ON t.oid = e.enumtypid
-        WHERE t.typname = 'account_type'
-        """
-    ))
-    labels = {row["label"] for row in result.mappings().all()}
-    assert labels == {e.value for e in AccountType}
+    assert account_type["data_type"] == "character varying"
+    assert account_type["character_maximum_length"] == 50
 
 
 # --- 約束 ------------------------------------------------------------------

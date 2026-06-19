@@ -23,7 +23,7 @@ def test_account_entity_to_orm_account_type_is_string():
 
 
 def test_account_entity_from_orm_xc_account_type():
-    # 模擬從 DB 讀回的 ORM 物件（account_type 為字串，如 Postgres ENUM 欄位回傳值）
+    # 模擬從 DB 讀回的 ORM 物件（account_type 為字串欄位）
     account = Account()
     account.aid = 123
     account.email = "test@example.com"

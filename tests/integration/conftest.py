@@ -37,7 +37,6 @@ async def sql_session():
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import text
 
-    from src.config.constant import AccountType
     from src.infra.db.sql.orm.auth_orm import Base
 
     url = _resolve_sql_url()
@@ -48,17 +47,12 @@ async def sql_session():
         connect_args={"timeout": 3, "server_settings": {"search_path": SQL_TEST_SCHEMA}},
     )
 
-    enum_values = ", ".join(f"'{e.value}'" for e in AccountType)
-
     try:
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
-            # 重建乾淨的專屬 schema：含 account_type enum 與 accounts 表
+            # 重建乾淨的專屬 schema：含 accounts 表
             await conn.execute(text(f"DROP SCHEMA IF EXISTS {SQL_TEST_SCHEMA} CASCADE"))
             await conn.execute(text(f"CREATE SCHEMA {SQL_TEST_SCHEMA}"))
-            await conn.execute(
-                text(f"CREATE TYPE {SQL_TEST_SCHEMA}.account_type AS ENUM ({enum_values})")
-            )
             await conn.run_sync(Base.metadata.create_all)
     except pytest.skip.Exception:
         raise
