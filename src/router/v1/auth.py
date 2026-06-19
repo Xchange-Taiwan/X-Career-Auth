@@ -13,7 +13,7 @@ from ...domain.auth.model import (
 from ...domain.message.model.email_model import *
 from ...app.adapter import (
     _auth_service,
-    ddb_session,
+    db_session,
 )
 from ..res.response import *
 from ...config.exception import *
@@ -32,7 +32,7 @@ router = APIRouter(
 @router.post('/sendcode/email', status_code=status.HTTP_201_CREATED)
 async def send_conform_code_by_email(
     payload: ConfirmCodeDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.send_code_by_email(db=db, data=payload)
     return post_success(data=res)
@@ -41,7 +41,7 @@ async def send_conform_code_by_email(
 @router.post('/signup/email', status_code=status.HTTP_201_CREATED)
 async def send_signup_confirm_email(
     payload: SendEmailDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.send_link_by_email(
         db=db, data=payload
@@ -54,7 +54,7 @@ async def send_signup_confirm_email(
              status_code=status.HTTP_201_CREATED)
 async def signup(
     payload: auth.NewAccountDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.signup(
         db, payload
@@ -67,7 +67,7 @@ async def signup(
              status_code=status.HTTP_201_CREATED)
 async def login(
     payload: gw.LoginDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     res = await _auth_service.login(db, payload)
     return post_success(data=res.dict())
@@ -76,7 +76,7 @@ async def login(
 @router.put('/password/update')
 async def update_password(
     payload: gw.UpdatePasswordDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     await _auth_service.update_password(db, payload)
     return res_success(msg='update success')
@@ -85,7 +85,7 @@ async def update_password(
 @router.get('/password/reset/email')
 async def send_reset_password_confirm_email(
     email: EmailStr = Query(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     verify_token = await _auth_service.send_reset_password_confirm_email(db, email)
     return res_success(msg='email sent', data={'token': verify_token})
@@ -94,7 +94,7 @@ async def send_reset_password_confirm_email(
 @router.delete('/accounts', status_code=status.HTTP_200_OK)
 async def delete_account(
     payload: auth.DeleteAccountDTO = Body(...),
-    db: AsyncSession = Depends(ddb_session),
+    db: AsyncSession = Depends(db_session),
 ):
     await _auth_service.delete_account(db, payload.email)
     return res_success(msg='deleted')
