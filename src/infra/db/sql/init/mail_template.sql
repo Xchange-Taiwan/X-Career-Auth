@@ -1,7 +1,7 @@
 -- ----------------------------
 -- Table structure for mail_template
 -- ----------------------------
-CREATE TABLE mail_template (
+CREATE TABLE IF NOT EXISTS mail_template (
   id VARCHAR(20) PRIMARY KEY,
   name TEXT,
   title VARCHAR(200),
@@ -60,4 +60,10 @@ INSERT INTO mail_template (
     'A template that can be used for verification, signup, or reset emails.',
     NOW(),
     NOW()
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+    content = EXCLUDED.content,
+    name = EXCLUDED.name,
+    title = EXCLUDED.title,
+    description = EXCLUDED.description,
+    update_time = CURRENT_TIMESTAMP;
