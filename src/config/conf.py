@@ -28,6 +28,13 @@ AUTO_FLUSH = bool(int(os.getenv('AUTO_FLUSH', '0')))    # 自動刷新
 # RDS 預設要求加密 (rds.force_ssl)，明文連線會被 pg_hba 以 "no encryption" 拒絕
 DB_SSL = os.getenv('DB_SSL', '').strip()  # AWS 上設 'require'，空字串為本機不加密
 
+# 完整連線字串：優先用環境變數 DB_URL（docker-compose 的 auth 服務直接餵此值），
+# 未提供時由上方 DB_* 組件組出，供整合測試 conftest 與本機連線使用。
+DB_URL = os.getenv(
+    'DB_URL',
+    f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}',
+)
+
 # email conf
 SITE_TITLE = os.getenv('SITE_TITLE', 'X-Career')
 EMAIL_SENDER = os.getenv('EMAIL_SENDER', 'xxxx')
