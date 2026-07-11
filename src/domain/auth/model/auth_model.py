@@ -1,6 +1,6 @@
 import json
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, EmailStr, validator, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from ....domain.auth.model.auth_entity import AccountEntity
 from ....infra.util.auth_util import *
 from ....config.constant import AccountType
@@ -83,8 +83,7 @@ class AccountVO(BaseModel):
     region: str
     user_id: int
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class DeleteAccountDTO(BaseModel):
@@ -99,5 +98,4 @@ class AccountOauthVO(AccountVO):
     region: str
     user_id: int
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
