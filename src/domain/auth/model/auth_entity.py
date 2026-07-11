@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from src.config.constant import AccountType
 from src.infra.util.time_util import current_seconds
 from src.infra.db.sql.orm.auth_orm import Account
@@ -19,8 +19,7 @@ class AccountEntity(BaseModel):
     created_at: Optional[int] = 0
     updated_at: Optional[int] = 0
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
     def register_format(self):
