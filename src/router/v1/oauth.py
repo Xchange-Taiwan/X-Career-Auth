@@ -43,7 +43,7 @@ async def signup_oauth(
         )
     else:
         raise ServerException('Invalid oauth type')
-    return post_success(data=res.dict())
+    return post_success(data=res.model_dump())
 
 
 @router.post('/login/oauth/{auth_type}',
@@ -58,4 +58,4 @@ async def login_oauth(
         res = await _oauth_service.login_oauth_google(db, payload)
     else:
         raise ServerException('Invalid oauth type')
-    return post_success(data=res.dict())
+    return post_success(data=res.model_dump())
