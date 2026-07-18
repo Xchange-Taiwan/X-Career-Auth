@@ -5,6 +5,7 @@ from src.config.logging_config import init_logging
 log = init_logging()
 
 import os, asyncio
+from contextlib import asynccontextmanager
 from mangum import Mangum
 from fastapi import FastAPI, Request, \
     Header, Path, Query, Body, Form, \
@@ -22,19 +23,6 @@ from src.config import exception
 
 STAGE = os.environ.get('STAGE')
 root_path = '/' if not STAGE else f'/{STAGE}'
-app = FastAPI(title='X-Career: Auth', root_path=root_path)
-
-
-@app.on_event('startup')
-async def startup_event():
-    # Schedule resource setup in the background so the Lambda becomes ready to
-    # accept traffic immediately. The DB pool is then initialized lazily by the
-    # first request that calls SQLResourceHandler.accessing(), which already
-    # builds the pool under a lock when self.engine is None. Previously this
-    # blocked startup for several seconds on a cold start and BFF's httpx call
-    # would time out before Auth was ready, surfacing as a 500.
-    asyncio.create_task(_warmup_resources())
-    asyncio.create_task(io_resource_manager.keeping_probe())
 
 
 async def _warmup_resources():
@@ -45,10 +33,21 @@ async def _warmup_resources():
         log.error('Resource warmup failed (will retry lazily): %s', e)
 
 
-@app.on_event('shutdown')
-async def shutdown_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Schedule resource setup in the background so the Lambda becomes ready to
+    # accept traffic immediately. The DB pool is then initialized lazily by the
+    # first request that calls SQLResourceHandler.accessing(), which already
+    # builds the pool under a lock when self.engine is None. Previously this
+    # blocked startup for several seconds on a cold start and BFF's httpx call
+    # would time out before Auth was ready, surfacing as a 500.
+    asyncio.create_task(_warmup_resources())
+    asyncio.create_task(io_resource_manager.keeping_probe())
+    yield
     await io_resource_manager.close()
 
+
+app = FastAPI(title='X-Career: Auth', root_path=root_path, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
