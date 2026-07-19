@@ -62,13 +62,13 @@ class OauthService(AuthService):
             if account_entity is None:
                 raise ServerException(msg="Google email already registered")
 
-            return auth.AccountOauthVO.parse_obj(account_entity.dict())
+            return auth.AccountOauthVO.model_validate(account_entity.model_dump())
 
         except Exception as e:
             log.error(
                 f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
-                None if account_entity is None else account_entity.dict(),
+                None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to signup")
@@ -100,7 +100,7 @@ class OauthService(AuthService):
 
             # 2. 驗證登入資訊
             if data.oauth_id == account_entity.oauth_id:
-                return auth.AccountOauthVO.parse_obj(account_entity.dict())
+                return auth.AccountOauthVO.model_validate(account_entity.model_dump())
             else:
                 raise ServerException(msg="Your google account is not valid")
 
@@ -108,7 +108,7 @@ class OauthService(AuthService):
             log.error(
                 f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
-                None if account_entity is None else account_entity.dict(),
+                None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to login")

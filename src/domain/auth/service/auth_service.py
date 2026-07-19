@@ -154,13 +154,13 @@ class AuthService:
             if account_entity is None:
                 raise ServerException(msg="Email already registered")
 
-            return auth.AccountVO.parse_obj(account_entity.dict())
+            return auth.AccountVO.model_validate(account_entity.model_dump())
 
         except Exception as e:
             log.error(
                 f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
-                None if account_entity is None else account_entity.dict(),
+                None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to signup")
@@ -199,13 +199,13 @@ class AuthService:
             ):
                 raise UnauthorizedException(msg="Error password")
 
-            return auth.AccountVO.parse_obj(account_entity.dict())
+            return auth.AccountVO.model_validate(account_entity.model_dump())
 
         except Exception as e:
             log.error(
-                f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
+                f"{self.cls_name}.login [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
-                None if account_entity is None else account_entity.dict(),
+                None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to login")
@@ -252,7 +252,7 @@ class AuthService:
             log.error(
                 f"{self.cls_name}.update_password [unknown_err] data: %s, account_entity: %s, err: %s",
                 data,
-                None if account_entity is None else account_entity.dict(),
+                None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
             )
             err_msg = getattr(e, "msg", "Unable to update password")
