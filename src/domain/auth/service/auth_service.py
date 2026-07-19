@@ -203,7 +203,7 @@ class AuthService:
 
         except Exception as e:
             log.error(
-                f"{self.cls_name}.signup [unknown_err] data:%s, account_entity:%s, err:%s",
+                f"{self.cls_name}.login [unknown_err] data:%s, account_entity:%s, err:%s",
                 data,
                 None if account_entity is None else account_entity.model_dump(),
                 e.__str__(),
