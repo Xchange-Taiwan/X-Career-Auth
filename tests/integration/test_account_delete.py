@@ -2,7 +2,10 @@ def test_delete_account_success(client, registered_account, fetch_account):
     email, password = registered_account
     assert fetch_account(email) is not None
 
-    response = client.delete(
+    # NOTE: starlette 0.20+ 的 TestClient 底層改為 httpx，其 delete() 不接受 body
+    # (json/content/data)，須改用 request() 才能送帶 body 的 DELETE。
+    response = client.request(
+        "DELETE",
         "/auth-service/api/v1/accounts",
         json={
             "email": email
@@ -20,7 +23,8 @@ def test_delete_account_success(client, registered_account, fetch_account):
 def test_delete_account_not_found(client):
     # NOTE: 刪除不存在帳號回 200(冪等刪除設計)— auth_service.delete_account 在帳號不存在時 silently 回 0,
     # router 仍回 res_success(msg='deleted')。此為刻意設計,測試鎖住此契約。
-    response = client.delete(
+    response = client.request(
+        "DELETE",
         "/auth-service/api/v1/accounts",
         json={
             "email": "nobody@example.com"
