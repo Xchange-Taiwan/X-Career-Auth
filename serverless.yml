@@ -75,8 +75,12 @@ provider:
 custom:
   pythonRequirements:
     dockerizePip: true # 使用 Docker 模擬 Lambda 環境安裝依賴
-    slim: false        # true 會清掉 *.dist-info metadata，pydantic v2 的 email-validator
-                        # 依賴 importlib.metadata 讀版本號，清掉會導致 Lambda import main 失敗（502）
+    slim: true
+    slimPatterns:
+      - '**/*.py[c|o]'
+      - '**/__pycache__*'
+    slimPatternsAppendDefaults: false   # 覆蓋預設清單，拿掉 *.dist-info*，避免清掉 email-validator
+                                         # 的版本 metadata（importlib.metadata 讀不到會導致 502）
     strip: true        # 移除多餘的文件
     layer:
       name: x-career-auth
